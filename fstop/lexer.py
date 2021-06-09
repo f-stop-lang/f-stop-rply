@@ -20,5 +20,5 @@ generator.add('FLIP', r'FLIP')
 
 generator.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
 
-generator.ignore(r'\s+')
+generator.ignore(r'[ \t]+')
 generator.ignore(r'//.*')
