@@ -7,7 +7,7 @@ string = '''OPEN "../test.png" AS img//lol sus
 '''
 
 if __name__ == '__main__':
-    lexer  = fstop.lexerGen.build()
+    lexer  = fstop.generator.build()
     fstop.parser.env = {}
     parser = fstop.parser.build()
 
