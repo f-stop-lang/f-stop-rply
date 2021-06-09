@@ -10,6 +10,7 @@ parser = ParserGenerator(
         'OPEN', 'AS', 'SAVE',
         'VARIABLE',
         'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
+        'NEWLINE'
     ],
     
     precedence = [

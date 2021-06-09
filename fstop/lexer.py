@@ -17,7 +17,7 @@ generator.add('INVERT', r'INVERT')
 generator.add('SOLAR', r'SOLAR')
 generator.add('MIRROR', r'MIRROR')
 generator.add('FLIP', r'FLIP')
-
+generator.add('NEWLINE', r'\n')
 generator.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
 
 generator.ignore(r'\s+')
