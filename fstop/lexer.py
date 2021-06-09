@@ -17,5 +17,5 @@ generator.add('NEWLINE', r'\n+')
 
 generator.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
 
-generator.ignore(r'[^\n\S]+')
+generator.ignore(r'\s+')
 generator.ignore(r'//.*')
