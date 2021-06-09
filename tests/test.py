@@ -12,6 +12,8 @@ if __name__ == '__main__':
     parser = fstop.parser.build()
 
     tokens = lexer.lex(string)
+    for i in tokens:
+        print(i)
     print(
         parser.parse(tokens)
     )
