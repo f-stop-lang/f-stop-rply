@@ -22,7 +22,7 @@ parser = ParserGenerator(
 
 @parser.production('string : STRING')
 def string(p: list) -> str:
-    return p[0].getstr().strip('"').strip("'")
+    return p[0].getstr()[1:-1]
 
 @parser.production('variable : VARIABLE')
 def variable_name(p: list) -> str:
