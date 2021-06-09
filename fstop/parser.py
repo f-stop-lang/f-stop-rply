@@ -10,7 +10,6 @@ parser = ParserGenerator(
         'OPEN', 'AS', 'SAVE',
         'VARIABLE',
         'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
-        'NEWLINE'
     ],
     
     precedence = [
@@ -19,6 +18,17 @@ parser = ParserGenerator(
     ],
 )
 
+@parser.production("main : statements")
+def expr(p: list):
+    return p[0]
+
+@parser.production("statements : statements expr")
+def expr(p: list):
+    return p[0] + [p[1]]
+
+@parser.production("statements : expr")
+def expr(p: list):
+    return [p[0]]
 
 @parser.production('string : STRING')
 def string(p: list) -> str:
@@ -32,14 +42,14 @@ def number(p: list) -> str:
 def variable_name(p: list) -> str:
     return p[0].getstr()
 
-@parser.production('string : OPEN string AS variable')
+@parser.production('expr : OPEN string AS variable')
 def open_statement(p: list) -> Image:
     left, right = p[1], p[-1]
     image = Image(left, right)
     parser.env[right] = image
     return image
 
-@parser.production('string : SAVE variable string')
+@parser.production('expr : SAVE variable string')
 def save_statement(p: list) -> None:
     if not (img := parser.env.get(p[-2])):
         raise NameError("Undefined image '%s'" % p[-2])

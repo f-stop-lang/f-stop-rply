@@ -3,8 +3,8 @@ from rply import LexerGenerator
 generator = LexerGenerator()
 
 generator.add('STRING', r'''("[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*')''')
-generator.add('INTEGER', r'[+-]?[1-9][0-9]*')
-#generator.add('FLOAT', r'[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)')
+generator.add('INTEGER', r'\d+')
+generator.add('FLOAT', r'[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)')
 
 generator.add('LEFT_PAREN', r'\(')
 generator.add('RIGHT_PAREN', r'\)')
@@ -17,7 +17,7 @@ generator.add('INVERT', r'INVERT')
 generator.add('SOLAR', r'SOLAR')
 generator.add('MIRROR', r'MIRROR')
 generator.add('FLIP', r'FLIP')
-generator.add('NEWLINE', r'\n')
+
 generator.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
 
 generator.ignore(r'\s+')

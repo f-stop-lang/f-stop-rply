@@ -3,16 +3,19 @@ import fstop
 
 reload(fstop)
 
-with open('./test.ft', 'r') as f:
-    string = f.read()
-print(string)
+string = '''
+OPEN "./assets/test.png" AS img
+FLIP img
+SOLAR img 128
+SAVE img "x.png"
+'''
+
 if __name__ == '__main__':
     lexer  = fstop.generator.build()
     fstop.parser.env = {}
     parser = fstop.parser.build()
     tokens = lexer.lex(string)
-    for i in tokens:
-        print(i)
+
     print(
         parser.parse(tokens)
-   )
+    )
