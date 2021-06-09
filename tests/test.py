@@ -3,8 +3,11 @@ import fstop
 
 reload(fstop)
 
-string = '''OPEN "../test.png" AS img//lol sus
-'''
+string = (
+    '''OPEN "./assets/test.png" AS img
+    SAVE img "s.png"
+    '''
+)
 
 if __name__ == '__main__':
     lexer  = fstop.lexerGen.build()

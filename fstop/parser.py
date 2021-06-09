@@ -8,7 +8,7 @@ parser = ParserGenerator(
         'NUMBER', 'STRING', 
         'LEFT_PAREN', 'RIGHT_PAREN', 
         'OPEN', 'AS', 'SAVE',
-        'NEWLINE', 'VARIABLE',
+        'VARIABLE',
         'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
     ],
     
@@ -24,13 +24,13 @@ parser = ParserGenerator(
 def string(p: list) -> str:
     return p[0].getstr().strip('"').strip("'")
 
+@parser.production('number : NUMBER')
+def number(p: list) -> str:
+    return int(p[0].getstr())
+    
 @parser.production('variable : VARIABLE')
 def variable_name(p: list) -> str:
     return p[0].getstr()
-
-@parser.production('newline : NEWLINE')
-def newline(_: list) -> None:
-    pass
 
 @parser.production('string : OPEN string AS variable')
 def open_statement(p: list) -> Image:

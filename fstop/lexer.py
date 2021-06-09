@@ -12,9 +12,12 @@ lexerGen.add('OPEN', r'OPEN')
 lexerGen.add('AS', r'AS')
 lexerGen.add('SAVE', r'SAVE')
 
-lexerGen.add('NEWLINE', r'\n+')
+lexerGen.add('INVERT', r'INVERT')
+lexerGen.add('SOLAR', r'SOLAR')
+lexerGen.add('MIRROR', r'MIRROR')
+lexerGen.add('FLIP', r'FLIP')
 
 lexerGen.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
 
-lexerGen.ignore(r'[^\n\S]+')
+lexerGen.ignore(r'\s+')
 lexerGen.ignore(r'//.*')
