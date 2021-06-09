@@ -1,23 +1,24 @@
 from rply import LexerGenerator
 
-lexerGen = LexerGenerator()
+generator = LexerGenerator()
 
-lexerGen.add('STRING', r'''("[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*')''')
-lexerGen.add('NUMBER', r'\d+')
+generator.add('STRING', r'''(['"]).*?(?<!\\)\1''')
+generator.add('INTEGER', r'[+-]?[1-9][0-9]*')
+generator.add('FLOAT', r'[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)')
 
-lexerGen.add('LEFT_PAREN', r'\(')
-lexerGen.add('RIGHT_PAREN', r'\)')
+generator.add('LEFT_PAREN', r'\(')
+generator.add('RIGHT_PAREN', r'\)')
 
-lexerGen.add('OPEN', r'OPEN')
-lexerGen.add('AS', r'AS')
-lexerGen.add('SAVE', r'SAVE')
+generator.add('OPEN', r'OPEN')
+generator.add('AS', r'AS')
+generator.add('SAVE', r'SAVE')
 
-lexerGen.add('INVERT', r'INVERT')
-lexerGen.add('SOLAR', r'SOLAR')
-lexerGen.add('MIRROR', r'MIRROR')
-lexerGen.add('FLIP', r'FLIP')
+generator.add('INVERT', r'INVERT')
+generator.add('SOLAR', r'SOLAR')
+generator.add('MIRROR', r'MIRROR')
+generator.add('FLIP', r'FLIP')
 
-lexerGen.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
+generator.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
 
-lexerGen.ignore(r'\s+')
-lexerGen.ignore(r'//.*')
+generator.ignore(r'\s+')
+generator.ignore(r'//.*')
