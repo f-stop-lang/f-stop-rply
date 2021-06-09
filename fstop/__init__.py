@@ -1,4 +1,3 @@
-
-from .lexer import lexerGen
+from .lexer import generator
 from .objects import Image
 from .parser import parser
