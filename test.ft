@@ -1,2 +1,2 @@
-OPEN "./assets/test.png" AS image
-SAVE image "out.png"
+//test comment
+OPEN "./assets/test.png" AS image SAVE image "out.png"
