@@ -3,9 +3,9 @@ import fstop
 
 reload(fstop)
 
-with open('processor.ft', 'r') as string:
+with open('./test.ft', 'r') as string:
     string = string.read()
-
+print(string)
 if __name__ == '__main__':
     lexer  = fstop.generator.build()
     fstop.parser.env = {}

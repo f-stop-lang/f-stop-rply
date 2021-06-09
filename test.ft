@@ -1,0 +1,2 @@
+OPEN "./assets/test.png" AS image
+SAVE image "out.png"

@@ -5,7 +5,7 @@ from .objects import Image
 
 parser = ParserGenerator(
     [
-        'NUMBER', 'STRING', 
+        'INTEGER', 'STRING', 
         'LEFT_PAREN', 'RIGHT_PAREN', 
         'OPEN', 'AS', 'SAVE',
         'VARIABLE',
@@ -13,8 +13,7 @@ parser = ParserGenerator(
     ],
     
     precedence = [
-        ('left', ['OPEN', 'AS']),
-        ('left', ['SAVE']),
+        ('left', ['OPEN', 'SAVE', 'AS']),
         ('left', ['INVERT'])
     ],
 )
@@ -24,7 +23,7 @@ parser = ParserGenerator(
 def string(p: list) -> str:
     return p[0].getstr()[1:-1]
 
-@parser.production('number : NUMBER')
+@parser.production('number : INTEGER')
 def number(p: list) -> str:
     return int(p[0].getstr())
     
