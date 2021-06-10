@@ -4,10 +4,11 @@ import fstop
 reload(fstop)
 
 string = '''
-OPEN "./assets/test.png" AS img
+NEW 'RGBA' (100, 100 COLOR 255) AS img
 FLIP img
 SOLAR img 128
-SAVE img "x.png"
+SHOW img
+CLOSE img
 '''
 
 if __name__ == '__main__':

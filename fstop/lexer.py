@@ -15,12 +15,22 @@ generator.add('SAVE', r'SAVE')
 generator.add('CLOSE', r'CLOSE')
 generator.add('SHOW', r'SHOW')
 
+generator.add('NEW', r'NEW')
+generator.add('WIDTH', r'WIDTH')
+generator.add('HEIGHT', r'HEIGHT')
+generator.add('COLOR', r'COLOR')
+generator.add('ALPHA', r'ALPHA')
+
 generator.add('INVERT', r'INVERT')
 generator.add('SOLAR', r'SOLAR')
 generator.add('MIRROR', r'MIRROR')
 generator.add('FLIP', r'FLIP')
 
 generator.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
+generator.add('NUMBER_TUPLE', r"\(\s*(([+-]?\s*\d+,\s*)+)?\s*[+-]?\s*\d+,?\s*\)")
 
-generator.ignore(r'\s+')
-generator.ignore(r'//.*')
+generator.add('COMMA', r',')
+
+generator.ignore(r'\s+')  # ignore all whitespace
+generator.ignore(r'//.*') # single line comment
+generator.ignore(r"/\*[.\n\r]*\*/") # multi-line comment
