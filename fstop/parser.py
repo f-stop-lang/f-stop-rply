@@ -9,7 +9,7 @@ parser = ParserGenerator(
         'LEFT_PAREN', 'RIGHT_PAREN', 
         'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE', 'MASK',
         'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 'PASTE',
-        'VARIABLE', 'COMMA', 'ON',
+        'VARIABLE', 'COMMA', 'ON', 'ECHO',
         'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
     ],
     
@@ -143,4 +143,13 @@ def show_statement(p: list) -> None:
     else:
         title = p[-1] if len(p) == 3 else None
         img.image.show(title=title)
+    return None
+
+@parser.production('expr : ECHO string')
+@parser.production('expr : ECHO number')
+@parser.production('expr : ECHO float')
+@parser.production('expr : ECHO variable')
+@parser.production('expr : ECHO ntuple')
+def echo(p: list) -> None:
+    print(p[0])
     return None

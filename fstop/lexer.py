@@ -7,6 +7,7 @@ generator.add('FLOAT', r'[+-]?(((([1-9][0-9]*)|0))?\.[0-9]+)|((([1-9][0-9]*)|0)\
 generator.add('INTEGER', r'[+-]?([1-9][0-9]*|0)')
 generator.add('EQUAL', r'=')
 generator.add('ON', r'ON')
+generator.add('ECHO', r'ECHO')
 
 generator.add('OPEN', r'OPEN')
 generator.add('AS', r'AS')
