@@ -3,7 +3,7 @@ from rply import LexerGenerator
 generator = LexerGenerator()
 
 generator.add('STRING', r'''("[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*')''')
-generator.add('INTEGER', r'\d+')
+generator.add('INTEGER', r'[+-]?(\d+)')
 generator.add('FLOAT', r'[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)')
 
 generator.add('LEFT_PAREN', r'\(')
