@@ -1,11 +1,10 @@
 // comment
 
-NEW "RGBA" (100, 100 COLOR 255) AS img1
-NEW "RGBA" (100, 100 COLOR 100) AS img2
-RESIZE img1 (1000, 1000)
-RESIZE img2 (1000, 1000)
-BLEND img1, img2 ALPHA 0.5 AS blended
-SHOW blended "test.png"
-CLOSE img1
-CLOSE img2
-CLOSE blended
+OPEN "./assets/test.png" AS img
+NEW "RGB" (100, 100 COLOR (255, 0, 0)) AS bg
+RESIZE img (20, 20)
+ROTATE img 20
+PASTE img ON bg (50, 50)
+SHOW bg "view.png"
+CLOSE img
+CLOSE bg

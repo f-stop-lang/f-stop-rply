@@ -7,9 +7,9 @@ parser = ParserGenerator(
     [
         'INTEGER', 'FLOAT', 'STRING', 'NUMBER_TUPLE', 'EQUAl',
         'LEFT_PAREN', 'RIGHT_PAREN', 
-        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE',
-        'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 
-        'VARIABLE', 'COMMA',
+        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE', 'MASK',
+        'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 'PASTE',
+        'VARIABLE', 'COMMA', 'ON',
         'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
     ],
     
@@ -116,6 +116,23 @@ def rotate_statement(p: list) -> None:
     else:
         img.image = img.image.rotate(p[-1])
         parser.env[p[1]] = img
+    return None
+
+@parser.production('expr : PASTE variable ON variable')
+@parser.production('expr : PASTE variable ON variable ntuple')
+@parser.production('expr : PASTE variable ON variable MASK variable ntuple')
+def paste_statement(p: list) -> None:
+    image, snippet = p[1], p[3]
+
+    if not (img1 := parser.env.get(image)):
+        raise NameError("Undefined image '%s'" % image)
+    if not (img2 := parser.env.get(snippet)):
+        raise NameError("Undefined image '%s'" % snippet)
+
+    xy = (0, 0) if len(p) == 4 else p[-1]
+    mask = p[-2] if len(p) == 7 else None
+    img2.image.paste(img1.image, xy, mask=mask)
+    parser.env[img2] = img2
     return None
 
 @parser.production('expr : SHOW variable')
