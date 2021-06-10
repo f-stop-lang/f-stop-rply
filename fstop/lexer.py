@@ -12,6 +12,8 @@ generator.add('RIGHT_PAREN', r'\)')
 generator.add('OPEN', r'OPEN')
 generator.add('AS', r'AS')
 generator.add('SAVE', r'SAVE')
+generator.add('CLOSE', r'CLOSE')
+generator.add('SHOW', r'SHOW')
 
 generator.add('INVERT', r'INVERT')
 generator.add('SOLAR', r'SOLAR')

@@ -5,9 +5,9 @@ from .objects import Image
 
 parser = ParserGenerator(
     [
-        'INTEGER', 'STRING', 
+        'INTEGER', 'FLOAT', 'STRING', 
         'LEFT_PAREN', 'RIGHT_PAREN', 
-        'OPEN', 'AS', 'SAVE',
+        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW',
         'VARIABLE',
         'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
     ],
@@ -55,4 +55,20 @@ def save_statement(p: list) -> None:
         raise NameError("Undefined image '%s'" % p[-2])
     else:
         img.image.save(p[-1])
+    return None
+
+@parser.production('expr : CLOSE variable')
+def close_statement(p: list) -> None:
+    if not (img := parser.env.get(p[-1])):
+        raise NameError("Undefined image '%s'" % p[-1])
+    else:
+        img.image.close()
+    return None
+
+@parser.production('expr : SHOW variable')
+def show_statement(p: list) -> None:
+    if not (img := parser.env.get(p[-1])):
+        raise NameError("Undefined image '%s'" % p[-1])
+    else:
+        img.image.show()
     return None
