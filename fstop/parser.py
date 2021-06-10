@@ -81,12 +81,12 @@ def open_statement(p: list) -> Image:
     return image
 
 @parser.production('expr : SAVE variable string')
-def save_statement(p: list) -> None:
+def save_statement(p: list) -> str:
     if not (img := parser.env.get(p[-2])):
         raise NameError("Undefined image '%s'" % p[-2])
     else:
         img.image.save(p[-1])
-    return None
+    return p[-1]
 
 @parser.production('expr : CLOSE variable')
 def close_statement(p: list) -> None:
@@ -97,9 +97,11 @@ def close_statement(p: list) -> None:
     return None
 
 @parser.production('expr : SHOW variable')
+@parser.production('expr : SHOW variable string')
 def show_statement(p: list) -> None:
-    if not (img := parser.env.get(p[-1])):
-        raise NameError("Undefined image '%s'" % p[-1])
+    if not (img := parser.env.get(p[1])):
+        raise NameError("Undefined image '%s'" % p[1])
     else:
-        img.image.show()
+        title = p[-1] if len(p) == 3 else None
+        img.image.show(title=title)
     return None
