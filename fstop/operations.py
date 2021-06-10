@@ -18,14 +18,14 @@ def invert_op(p: list) -> None:
     operation(p, ImageOps.invert)
 
 @parser.production('expr : SOLAR variable number')
-def invert_op(p: list) -> None:
+def solar_op(p: list) -> None:
     value = p[-1]
     operation(p, ImageOps.solarize, value)
 
 @parser.production('expr : MIRROR variable')
-def invert_op(p: list) -> None:
+def mirror_op(p: list) -> None:
     operation(p, ImageOps.mirror)
 
 @parser.production('expr : FLIP variable')
-def invert_op(p: list) -> None:
+def flip_op(p: list) -> None:
     operation(p, ImageOps.flip)
