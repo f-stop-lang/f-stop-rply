@@ -5,9 +5,9 @@ from .objects import Image
 
 parser = ParserGenerator(
     [
-        'INTEGER', 'FLOAT', 'STRING', 'NUMBER_TUPLE',
+        'INTEGER', 'FLOAT', 'STRING', 'NUMBER_TUPLE', 'EQUAl',
         'LEFT_PAREN', 'RIGHT_PAREN', 
-        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND',
+        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE',
         'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 
         'VARIABLE', 'COMMA',
         'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
@@ -49,14 +49,18 @@ def variable_name(p: list) -> str:
 
 @parser.production('ntuple : NUMBER_TUPLE')
 def num_tuple(p: list) -> tuple:
-    return tuple(p[0].strip("() \n\r,").split(","))
+    return tuple(map(int, p[0].getstr().strip("() \n\r,").split(",")))
 
-@parser.production('expr : BLEND variable COMMA variable AS variable')
 @parser.production('expr : BLEND variable COMMA variable ALPHA float AS variable')
 def blend(p: list) -> Image:
-    backg, overlay, name = p[1], p[3], p[-1]
-    alpha = p[5] if len(p) == 8 else None
-    img = PIL_Image.blend(backg, overlay, alpha=alpha)
+    backg, overlay, alpha, name = p[1], p[3], p[-3], p[-1]
+
+    if not (img1 := parser.env.get(backg)):
+        raise NameError("Undefined image '%s'" % backg)
+    if not (img2 := parser.env.get(overlay)):
+        raise NameError("Undefined image '%s'" % overlay)
+
+    img = PIL_Image.blend(img1.image, img2.image, alpha=alpha)
     image = Image(img, name=name)
     parser.env[name] = image
     return image
@@ -94,6 +98,24 @@ def close_statement(p: list) -> None:
         raise NameError("Undefined image '%s'" % p[-1])
     else:
         img.image.close()
+    return None
+
+@parser.production('expr : RESIZE variable ntuple')
+def resize_statement(p: list) -> None:
+    if not (img := parser.env.get(p[1])):
+        raise NameError("Undefined image '%s'" % p[1])
+    else:
+        img.image = img.image.resize(p[-1])
+        parser.env[p[1]] = img
+    return None
+
+@parser.production('expr : ROTATE variable number')
+def rotate_statement(p: list) -> None:
+    if not (img := parser.env.get(p[1])):
+        raise NameError("Undefined image '%s'" % p[1])
+    else:
+        img.image = img.image.rotate(p[-1])
+        parser.env[p[1]] = img
     return None
 
 @parser.production('expr : SHOW variable')

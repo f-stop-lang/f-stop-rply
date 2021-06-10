@@ -3,13 +3,8 @@ import fstop
 
 reload(fstop)
 
-string = '''
-NEW 'RGBA' (100, 100 COLOR 255) AS img
-FLIP img
-SOLAR img 128
-SHOW img
-CLOSE img
-'''
+with open("test.ft") as ft:
+    string = ft.read()
 
 if __name__ == '__main__':
     lexer  = fstop.generator.build()
