@@ -5,6 +5,7 @@ NEW "RGB" (100, 100 COLOR (255, 0, 0)) AS bg
 RESIZE img SIZE bg
 CONVERT img MODE bg
 BLEND bg, img ALPHA 0.5 AS blended
+PUTPIXEL img (10, 10) COLOR 255
 SHOW blended "view.png"
 ECHO "amogus sus"
 CLOSE img

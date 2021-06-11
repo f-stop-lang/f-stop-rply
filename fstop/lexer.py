@@ -21,6 +21,7 @@ generator.add('PASTE', r'PASTE')
 generator.add('MASK', r'MASK')
 generator.add('CLONE', r'CLONE')
 generator.add('CONVERT', r'CONVERT')
+generator.add('PUTPIXEL', r'PUTPIXEL')
 
 generator.add('NEW', r'NEW')
 generator.add('WIDTH', r'WIDTH')

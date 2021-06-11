@@ -7,7 +7,7 @@ parser = ParserGenerator(
     [
         'INTEGER', 'FLOAT', 'STRING', 'NUMBER_TUPLE', 'EQUAl',
         'LEFT_PAREN', 'RIGHT_PAREN', 
-        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE', 'MASK', 'CONVERT', 'CLONE',
+        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE', 'MASK', 'CONVERT', 'CLONE', 'PUTPIXEL',
         'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 'PASTE', 'SIZE', 'MODE',
         'VARIABLE', 'COMMA', 'ON', 'ECHO',
         'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
@@ -177,6 +177,17 @@ def paste_statement(p: list) -> None:
     mask = p[-2] if len(p) == 7 else None
     img2.image.paste(img1.image, xy, mask=mask)
     parser.env[img2] = img2
+    return None
+
+@parser.production('expr : PUTPIXEL variable ntuple COLOR ntuple')
+@parser.production('expr : PUTPIXEL variable ntuple COLOR number')
+def putpixel(p: list) -> None:
+    coords, color = p[-3], p[-1]
+    if not (img := parser.env.get(p[1])):
+        raise NameError("Undefined image '%s'" % p[1])
+    else:
+        img.image.putpixel(coords, color)
+        parser.env[img] = img
     return None
 
 @parser.production('expr : SHOW variable')
