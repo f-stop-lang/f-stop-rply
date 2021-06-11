@@ -1,10 +1,12 @@
-// comment
+// blend 2 images together
 
 OPEN "./assets/test.png" AS img
 NEW "RGB" (100, 100 COLOR (255, 0, 0)) AS bg
-RESIZE img (20, 20)
-ROTATE img 20
-PASTE img ON bg (50, 50)
-SHOW bg "view.png"
+RESIZE img SIZE bg
+CONVERT img MODE bg
+BLEND bg, img ALPHA 0.5 AS blended
+SHOW blended "view.png"
+ECHO "amogus sus"
 CLOSE img
 CLOSE bg
+CLOSE blended

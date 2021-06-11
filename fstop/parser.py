@@ -7,8 +7,8 @@ parser = ParserGenerator(
     [
         'INTEGER', 'FLOAT', 'STRING', 'NUMBER_TUPLE', 'EQUAl',
         'LEFT_PAREN', 'RIGHT_PAREN', 
-        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE', 'MASK',
-        'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 'PASTE',
+        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE', 'MASK', 'CONVERT', 'CLONE',
+        'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 'PASTE', 'SIZE', 'MODE',
         'VARIABLE', 'COMMA', 'ON', 'ECHO',
         'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
     ],
@@ -32,12 +32,29 @@ def expr(p: list):
     return [p[0]]
 
 @parser.production('string : STRING')
+@parser.production('string : MODE variable')
 def string(p: list) -> str:
-    return p[0].getstr().strip("'").strip('"')
+    if len(p) == 1:
+        return p[0].getstr().strip("'").strip('"')
+    else:
+        if not (img := parser.env.get(p[-1])):
+            raise NameError("Undefined image '%s'" % p[-1])
+        else:
+            return img.image.mode
 
 @parser.production('number : INTEGER')
+@parser.production('number : WIDTH variable')
+@parser.production('number : HEIGHT variable')
 def integer(p: list) -> int:
-    return int(p[0].getstr())
+    if len(p) == 1:
+        return int(p[0].getstr())
+    else:
+        if not (img := parser.env.get(p[-1])):
+            raise NameError("Undefined image '%s'" % p[-1])
+        else:
+            return (
+                img.image.width if p[0].gettokentype() == "WIDTH" else img.image.height
+            )
 
 @parser.production('float : FLOAT')
 def float_(p: list) -> float:
@@ -48,8 +65,15 @@ def variable_name(p: list) -> str:
     return p[0].getstr()
 
 @parser.production('ntuple : NUMBER_TUPLE')
+@parser.production('ntuple : SIZE variable')
 def num_tuple(p: list) -> tuple:
-    return tuple(map(int, p[0].getstr().strip("() \n\r,").split(",")))
+    if len(p) == 1:
+        return tuple(map(int, p[0].getstr().strip("() \n\r,").split(",")))
+    else:
+        if not (img := parser.env.get(p[-1])):
+            raise NameError("Undefined image '%s'" % p[-1])
+        else:
+            return img.image.size
 
 @parser.production('expr : BLEND variable COMMA variable ALPHA float AS variable')
 def blend(p: list) -> Image:
@@ -83,6 +107,26 @@ def open_statement(p: list) -> Image:
     image = Image(img, name=name)
     parser.env[name] = image
     return image
+
+@parser.production('expr : CLONE variable AS variable')
+def clone_statement(p: list) -> Image:
+    if not (img := parser.env.get(p[1])):
+        raise NameError("Undefined image '%s'" % p[1])
+    else:
+        name = p[-1]
+        clone = img.image.copy()
+        image = Image(clone, name=name)
+        parser.env[name] = image 
+        return image
+
+@parser.production('expr : CONVERT variable string')
+def convert_statement(p: list) -> Image:
+    if not (img := parser.env.get(p[1])):
+        raise NameError("Undefined image '%s'" % p[1])
+    else:
+        img.image = img.image.convert(p[-1])
+        parser.env[p[1]] = img
+    return None
 
 @parser.production('expr : SAVE variable string')
 def save_statement(p: list) -> str:
@@ -151,5 +195,5 @@ def show_statement(p: list) -> None:
 @parser.production('expr : ECHO variable')
 @parser.production('expr : ECHO ntuple')
 def echo(p: list) -> None:
-    print(p[0])
+    print(p[-1])
     return None
