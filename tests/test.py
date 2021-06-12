@@ -9,6 +9,7 @@ with open("test.ft") as ft:
 if __name__ == '__main__':
     lexer  = fstop.generator.build()
     fstop.parser.env = {}
+    fstop.parser.sq_env = {}
     parser = fstop.parser.build()
     tokens = lexer.lex(string)
 

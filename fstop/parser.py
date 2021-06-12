@@ -1,5 +1,5 @@
 from PIL import Image as PIL_Image
-from rply import ParserGenerator
+from rply import ParserGenerator, Token
 
 from .objects import Image
 
@@ -64,16 +64,21 @@ def float_(p: list) -> float:
 def variable_name(p: list) -> str:
     return p[0].getstr()
 
-@parser.production('ntuple : NUMBER_TUPLE')
+@parser.production('ntuple : LEFT_PAREN number COMMA number RIGHT_PAREN')
+@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA RIGHT_PAREN')
+@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number RIGHT_PAREN')
+@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number COMMA RIGHT_PAREN')
+@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number COMMA number RIGHT_PAREN')
+@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number COMMA number COMMA RIGHT_PAREN')
 @parser.production('ntuple : SIZE variable')
 def num_tuple(p: list) -> tuple:
-    if len(p) == 1:
-        return tuple(map(int, p[0].getstr().strip("() \n\r,").split(",")))
-    else:
+    if len(p) == 2:
         if not (img := parser.env.get(p[-1])):
             raise NameError("Undefined image '%s'" % p[-1])
         else:
             return img.image.size
+    else:
+        return tuple(x for x in p if not isinstance(x, Token))
 
 @parser.production('expr : BLEND variable COMMA variable ALPHA float AS variable')
 def blend(p: list) -> Image:
@@ -89,13 +94,13 @@ def blend(p: list) -> Image:
     parser.env[name] = image
     return image
 
-@parser.production('expr : NEW string LEFT_PAREN number COMMA number RIGHT_PAREN AS variable')
-@parser.production('expr : NEW string LEFT_PAREN number COMMA number COLOR ntuple RIGHT_PAREN AS variable')
-@parser.production('expr : NEW string LEFT_PAREN number COMMA number COLOR number RIGHT_PAREN AS variable')
+@parser.production('expr : NEW string ntuple AS variable')
+@parser.production('expr : NEW string ntuple COLOR ntuple AS variable')
+@parser.production('expr : NEW string ntuple COLOR number AS variable')
 def new_statement(p: list) -> Image:
-    mode, width, height, name = p[1], p[3], p[5], p[-1]
-    color = p[7] if len(p) == 11 else 0
-    img = PIL_Image.new(mode, (width, height), color)
+    mode, size, name = p[1], p[2], p[-1]
+    color = p[4] if len(p) == 7 else 0
+    img = PIL_Image.new(mode, size, color)
     image = Image(img, name=name)
     parser.env[name] = image
     return image
@@ -125,7 +130,6 @@ def convert_statement(p: list) -> Image:
         raise NameError("Undefined image '%s'" % p[1])
     else:
         img.image = img.image.convert(p[-1])
-        parser.env[p[1]] = img
     return None
 
 @parser.production('expr : SAVE variable string')
@@ -150,7 +154,6 @@ def resize_statement(p: list) -> None:
         raise NameError("Undefined image '%s'" % p[1])
     else:
         img.image = img.image.resize(p[-1])
-        parser.env[p[1]] = img
     return None
 
 @parser.production('expr : ROTATE variable number')
@@ -159,7 +162,6 @@ def rotate_statement(p: list) -> None:
         raise NameError("Undefined image '%s'" % p[1])
     else:
         img.image = img.image.rotate(p[-1])
-        parser.env[p[1]] = img
     return None
 
 @parser.production('expr : PASTE variable ON variable')
@@ -176,7 +178,6 @@ def paste_statement(p: list) -> None:
     xy = (0, 0) if len(p) == 4 else p[-1]
     mask = p[-2] if len(p) == 7 else None
     img2.image.paste(img1.image, xy, mask=mask)
-    parser.env[img2] = img2
     return None
 
 @parser.production('expr : PUTPIXEL variable ntuple COLOR ntuple')
@@ -187,7 +188,6 @@ def putpixel(p: list) -> None:
         raise NameError("Undefined image '%s'" % p[1])
     else:
         img.image.putpixel(coords, color)
-        parser.env[img] = img
     return None
 
 @parser.production('expr : SHOW variable')

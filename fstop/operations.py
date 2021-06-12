@@ -10,7 +10,6 @@ def operation(p, operation, *args, **kwargs):
             img.image.convert("RGB"),
             *args, **kwargs
         )
-        parser.env[p[1]] = img
     return None
 
 @parser.production('expr : INVERT variable')

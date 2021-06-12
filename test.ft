@@ -1,13 +1,14 @@
 // blend 2 images together
 
 OPEN "./assets/test.png" AS img
-NEW "RGB" (100, 100 COLOR (255, 0, 0)) AS bg
-RESIZE img SIZE bg
+NEW "RGB" SIZE img COLOR (255, 0, 0) AS bg
 CONVERT img MODE bg
-BLEND bg, img ALPHA 0.5 AS blended
+INVERT img
+SOLARIZE img
+ROTATE img -40
+PASTE img ON bg (10, 10)
 PUTPIXEL img (10, 10) COLOR 255
-SHOW blended "view.png"
+SHOW bg "view.png"
 ECHO "amogus sus"
 CLOSE img
 CLOSE bg
-CLOSE blended
