@@ -1,11 +1,9 @@
 from rply.token import BaseBox
-from PIL import Image as PIL_Image
 
-class Image(BaseBox):
+class ImageRepr(BaseBox):
 
-    def __init__(self, image: PIL_Image.Image, *, name: str) -> None:
-        self.name = name
+    def __init__(self, image):
         self.image = image
-
+    
     def __repr__(self):
-        return "<Image '%s'>" % self.name
+        return "<ImageRepr image='%s'>" % self.image

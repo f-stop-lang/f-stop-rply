@@ -1,16 +1,18 @@
-from PIL import Image as PIL_Image
+from typing import Optional
+
+from PIL import ImageSequence, Image
 from rply import ParserGenerator, Token
 
-from .objects import Image
+from .objects import ImageRepr
 
 parser = ParserGenerator(
     [
-        'INTEGER', 'FLOAT', 'STRING', 'NUMBER_TUPLE', 'EQUAl',
+        'INTEGER', 'FLOAT', 'STRING', 'NUMBER_TUPLE',
         'LEFT_PAREN', 'RIGHT_PAREN', 
         'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE', 'MASK', 'CONVERT', 'CLONE', 'PUTPIXEL',
         'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 'PASTE', 'SIZE', 'MODE',
-        'VARIABLE', 'COMMA', 'ON', 'ECHO',
-        'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
+        'VARIABLE', 'COMMA', 'ON', 'ECHO', 'TO', 'SEQUENCE', 'APPEND', 'SEQ',
+        'INVERT', 'SOLARIZE', 'MIRROR', 'FLIP',
     ],
     
     precedence = [
@@ -18,6 +20,8 @@ parser = ParserGenerator(
         ('left', ['INVERT'])
     ],
 )
+parser.sq_env = {}
+parser.env = {}
 
 @parser.production("main : statements")
 def program(p: list):
@@ -65,11 +69,8 @@ def variable_name(p: list) -> str:
     return p[0].getstr()
 
 @parser.production('ntuple : LEFT_PAREN number COMMA number RIGHT_PAREN')
-@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA RIGHT_PAREN')
 @parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number RIGHT_PAREN')
-@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number COMMA RIGHT_PAREN')
 @parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number COMMA number RIGHT_PAREN')
-@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number COMMA number COMMA RIGHT_PAREN')
 @parser.production('ntuple : SIZE variable')
 def num_tuple(p: list) -> tuple:
     if len(p) == 2:
@@ -80,6 +81,34 @@ def num_tuple(p: list) -> tuple:
     else:
         return tuple(x for x in p if not isinstance(x, Token))
 
+@parser.production('sequence : SEQ')
+@parser.production('sequence : SEQUENCE variable')
+def sequence(p: list) -> list:
+    if len(p) == 1:
+        try:
+            seq =  [
+                parser.env[f] for f in p[0].getstr()[1:-1].split(',') if f
+            ]
+        except KeyError as k:
+            raise NameError("Undefined image '%s'" % k)
+        return seq
+    else:
+        if not (img := parser.env.get(p[-1])):
+            raise NameError("Undefined image '%s'" % p[-1])
+        else:
+            return list(ImageSequence.Iterator(img))
+
+@parser.production('expr : APPEND variable TO variable')
+def append_seq(p: list) -> None:
+
+    if not (seq := parser.sq_env.get(p[-1])):
+        raise NameError("Undefined sequence '%s'" % p[-1])
+    if not (img := parser.env.get(p[1])):
+        raise NameError("Undefined image '%s'" % p[1])
+
+    seq.append(img)
+    return None
+
 @parser.production('expr : BLEND variable COMMA variable ALPHA float AS variable')
 def blend(p: list) -> Image:
     backg, overlay, alpha, name = p[1], p[3], p[-3], p[-1]
@@ -89,27 +118,31 @@ def blend(p: list) -> Image:
     if not (img2 := parser.env.get(overlay)):
         raise NameError("Undefined image '%s'" % overlay)
 
-    img = PIL_Image.blend(img1.image, img2.image, alpha=alpha)
-    image = Image(img, name=name)
+    image = Image.blend(img1.image, img2.image, alpha=alpha)
+    image = ImageRepr(image)
     parser.env[name] = image
     return image
 
+@parser.production('expr : NEW sequence AS variable')
 @parser.production('expr : NEW string ntuple AS variable')
 @parser.production('expr : NEW string ntuple COLOR ntuple AS variable')
 @parser.production('expr : NEW string ntuple COLOR number AS variable')
-def new_statement(p: list) -> Image:
+def new_statement(p: list) -> Optional[Image.Image]:
+    if len(p) == 4:
+        parser.sq_env[p[-1]] = p[1]
+
     mode, size, name = p[1], p[2], p[-1]
     color = p[4] if len(p) == 7 else 0
-    img = PIL_Image.new(mode, size, color)
-    image = Image(img, name=name)
+    image = Image.new(mode, size, color)
+    image = ImageRepr(image)
     parser.env[name] = image
     return image
 
 @parser.production('expr : OPEN string AS variable')
 def open_statement(p: list) -> Image:
     filename, name = p[1], p[-1]
-    img = PIL_Image.open(filename)
-    image = Image(img, name=name)
+    image = Image.open(filename)
+    image = ImageRepr(image)
     parser.env[name] = image
     return image
 
@@ -119,8 +152,8 @@ def clone_statement(p: list) -> Image:
         raise NameError("Undefined image '%s'" % p[1])
     else:
         name = p[-1]
-        clone = img.image.copy()
-        image = Image(clone, name=name)
+        image = img.image.copy()
+        image = ImageRepr(image)
         parser.env[name] = image 
         return image
 
