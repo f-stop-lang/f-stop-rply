@@ -42,6 +42,7 @@ generator.add('SOLARIZE', r'SOLARIZE')
 generator.add('MIRROR', r'MIRROR')
 generator.add('FLIP', r'FLIP')
 
+generator.add('BOX', r"\((([+-]?\d+,)+)?([+-]?\d+),?\)")
 generator.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
 generator.add('SEQ', r"\[(([a-zA-Z_][a-zA-Z0-9_]*,)+)?[a-zA-Z_][a-zA-Z0-9_]*,?\]")
 

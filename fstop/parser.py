@@ -7,8 +7,8 @@ from .objects import ImageRepr
 
 parser = ParserGenerator(
     [
-        'INTEGER', 'FLOAT', 'STRING', 'NUMBER_TUPLE',
-        'LEFT_PAREN', 'RIGHT_PAREN', 
+        'INTEGER', 'FLOAT', 'STRING',
+        'LEFT_PAREN', 'RIGHT_PAREN', 'BOX',
         'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE', 'MASK', 'CONVERT', 'CLONE', 'PUTPIXEL',
         'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 'PASTE', 'SIZE', 'MODE',
         'VARIABLE', 'COMMA', 'ON', 'ECHO', 'TO', 'SEQUENCE', 'APPEND', 'SEQ',
@@ -67,6 +67,10 @@ def float_(p: list) -> float:
 @parser.production('variable : VARIABLE')
 def variable_name(p: list) -> str:
     return p[0].getstr()
+
+@parser.production('box : BOX')
+def box(p: list) -> tuple:
+    return tuple(map(int, p[0].getstr()[1:-1].strip().split(',')))
 
 @parser.production('ntuple : LEFT_PAREN number COMMA number RIGHT_PAREN')
 @parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number RIGHT_PAREN')

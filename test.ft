@@ -1,7 +1,7 @@
 // blend 2 images together
 
 OPEN "./assets/test.png" AS img
-NEW "RGB" SIZE img COLOR (255, 0, 0) AS bg
+NEW "RGB" (WIDTH img, HEIGHT img) COLOR (255, 0, 0) AS bg
 CONVERT img MODE bg
 INVERT img
 SOLARIZE img

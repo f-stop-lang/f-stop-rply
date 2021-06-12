@@ -1,4 +1,4 @@
-from PIL import ImageOps, ImageFilter
+from PIL import ImageOps, ImageDraw
 
 from .parser import parser
 
@@ -10,6 +10,11 @@ def operation(p, operation, *args, **kwargs):
             image.image.convert("RGB"),
             *args, **kwargs
         )
+    return None
+
+def image_draw(img, operation: str, *args, **kwargs) -> None:
+    cursor = ImageDraw.Draw(img.image)
+    getattr(cursor, operation)(*args, **kwargs)
     return None
 
 @parser.production('expr : INVERT variable')
