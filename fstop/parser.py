@@ -25,6 +25,9 @@ def get_var(name: str, type_: str = 'var') -> Optional[ImageRepr]:
         raise NameError("Undefined variable '%s'" % name)
     return var
 
+# productions
+# program statements
+
 @parser.production("main : statements")
 def program(p: list):
     return p[0]
@@ -36,6 +39,8 @@ def statements(p: list):
 @parser.production("statements : expr")
 def expr(p: list):
     return [p[0]]
+
+# object type productions
 
 @parser.production('string : STRING')
 @parser.production('string : MODE variable')
@@ -79,8 +84,10 @@ def ntuple_body(p: list) -> tuple:
 @parser.production('ntuple : SIZE variable')
 def ntuple(p: list) -> tuple:
     if isinstance(p[0], Token):
-        return p[1].image.size
-    return p[0] + (p[1],) if len(p) == 3 else p[0]
+        img = get_var(p[1])
+        return img.image.size
+    else:
+        return p[0] + (p[1],) if len(p) == 3 else p[0]
 
 @parser.production('sequence_start : LEFT_BR variable COMMA')
 def seq_start(p: list) -> list:
@@ -100,7 +107,9 @@ def sequence(p: list) -> list:
     else:
         return p[0] + [p[1]] if len(p) == 3 else p[0]
 
-@parser.production('expr : APPEND variable TO seq_var')
+# operation productions
+
+@parser.production('expr : APPEND variable TO variable')
 def append_seq(p: list) -> None:
     img = get_var(p[1])
     seq = get_var(p[-1], 'seq')
@@ -120,7 +129,7 @@ def blend(p: list) -> Image:
 @parser.production('expr : NEW string ntuple COLOR ntuple AS variable')
 @parser.production('expr : NEW string ntuple COLOR number AS variable')
 def new_statement(p: list) -> Optional[Image.Image]:
-    
+
     if len(p) == 4:
         parser.env[p[-1]] = p[1]
     else:
