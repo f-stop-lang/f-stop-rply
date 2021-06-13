@@ -2,14 +2,16 @@
 
 OPEN "./assets/test.png" AS img
 NEW [] AS var
-NEW "RGB" (WIDTH img, HEIGHT var) COLOR (0, 0, 255) AS bg
+NEW "RGB" (WIDTH img, HEIGHT img) COLOR (0, 0, 255) AS bg
 CONVERT img MODE bg
+CLONE img AS overlay
 INVERT img
 SOLARIZE img
 ROTATE img -40
 PASTE img ON bg (100, 100)
 PUTPIXEL img (10, 10) COLOR 255
-SHOW bg "view.png"
+BLEND bg, overlay ALPHA 0.5 AS blended
+SHOW blended "view.png"
 ECHO "amogus sus"
 CLOSE img
 CLOSE bg
