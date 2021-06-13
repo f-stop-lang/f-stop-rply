@@ -7,8 +7,9 @@ from PIL.Image import Image
 from .parser import parser, get_var
 from .objects import ImageRepr
 
-def operation(p: list, operation: Callable, *, mode: str = 'RGBA', *args, **kwargs):
+def operation(p: list, operation: Callable, *args, **kwargs):
     image = get_var(p[1])
+    mode = 'RGB' if operation.__module__ == 'PIL.ImageOps' else 'RGBA'
     image.image = operation(
         image.image.convert(mode),
         *args, **kwargs
@@ -17,31 +18,31 @@ def operation(p: list, operation: Callable, *, mode: str = 'RGBA', *args, **kwar
 
 @parser.production('expr : INVERT variable')
 def invert_op(p: list) -> None:
-    operation(p, ImageOps.invert, mode='RGB')
+    operation(p, ImageOps.invert)
 
 @parser.production('expr : GRAYSCALE variable')
 def grayscale_op(p: list) -> None:
-    operation(p, ImageOps.grayscale, mode='RGB')
+    operation(p, ImageOps.grayscale)
 
 @parser.production('expr : MIRROR variable')
 def mirror_op(p: list) -> None:
-    operation(p, ImageOps.mirror, mode='RGB')
+    operation(p, ImageOps.mirror)
 
 @parser.production('expr : FLIP variable')
 def flip_op(p: list) -> None:
-    operation(p, ImageOps.flip, mode='RGB')
+    operation(p, ImageOps.flip)
 
 @parser.production('expr : SOLARIZE variable')
 @parser.production('expr : SOLARIZE variable number')
 def solar_op(p: list) -> None:
     value = p[-1] if len(p) == 3 else 128
-    operation(p, ImageOps.solarize, value, mode='RGB')
+    operation(p, ImageOps.solarize, value)
 
 @parser.production('expr : POSTERIZE variable')
 @parser.production('expr : POSTERIZE variable number')
 def poster_op(p: list) -> None:
     value = p[-1] if len(p) == 3 else 4
-    operation(p, ImageOps.solarize, value, mode='RGB')
+    operation(p, ImageOps.solarize, value)
 
 # filters
 
@@ -103,7 +104,7 @@ def median_filter(p: list) -> None:
 
 def draw(img: ImageRepr, operation: str, *args, **kwargs) -> ImageDraw.Draw:
     img = get_var(img)
-    cursor = ImageDraw.Draw(img)
+    cursor = ImageDraw.Draw(img.image)
     operation = getattr(cursor, operation)
     operation(*args, **kwargs)
     return cursor

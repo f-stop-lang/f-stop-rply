@@ -213,6 +213,14 @@ def show_statement(p: list) -> None:
     img.image.show(title=title)
     return None
 
+@parser.production('expr : CROP variable')
+@parser.production('expr : CROP variable ntuple')
+def crop_statement(p: list) -> None:
+    img = get_var(p[1])
+    box = p[-1] if len(p) == 3 else None
+    img.image = img.image.crop(box=box)
+    return None
+
 @parser.production('expr : ECHO expr')
 def echo(p: list) -> None:
     return print(p[-1])
