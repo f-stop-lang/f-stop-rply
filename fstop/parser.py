@@ -1,18 +1,16 @@
-from typing import Optional
+from typing import Optional, Union
 
 from PIL import ImageSequence, Image
 from rply import ParserGenerator, Token
 
+from .lexer import generator
 from .objects import ImageRepr
+
+print([x.name for x in generator.rules])
 
 parser = ParserGenerator(
     [
-        'INTEGER', 'FLOAT', 'STRING',
-        'LEFT_PAREN', 'RIGHT_PAREN', 'LEFT_BR', 'RIGHT_BR',
-        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE', 'MASK', 'CONVERT', 'CLONE', 'PUTPIXEL',
-        'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 'PASTE', 'SIZE', 'MODE',
-        'VARIABLE', 'COMMA', 'ON', 'ECHO', 'TO', 'SEQUENCE', 'APPEND', 'SEQ',
-        'INVERT', 'SOLARIZE', 'MIRROR', 'FLIP',
+        l.name for l in generator.rules
     ],
     
     precedence = [],
@@ -107,6 +105,11 @@ def sequence(p: list) -> list:
     else:
         return p[0] + [p[1]] if len(p) == 3 else p[0]
 
+@parser.production('color : COLOR ntuple')
+@parser.production('color : COLOR number')
+def color_st(p: list) -> Union[tuple, int]:
+    return p[-1]
+
 # operation productions
 
 @parser.production('expr : APPEND variable TO variable')
@@ -126,15 +129,14 @@ def blend(p: list) -> Image:
 
 @parser.production('expr : NEW sequence AS variable')
 @parser.production('expr : NEW string ntuple AS variable')
-@parser.production('expr : NEW string ntuple COLOR ntuple AS variable')
-@parser.production('expr : NEW string ntuple COLOR number AS variable')
+@parser.production('expr : NEW string ntuple color AS variable')
 def new_statement(p: list) -> Optional[Image.Image]:
 
     if len(p) == 4:
         parser.env[p[-1]] = p[1]
     else:
         mode, size, name = p[1], p[2], p[-1]
-        color = p[4] if len(p) == 7 else 0
+        color = p[3] if len(p) == 6 else 0
         image = Image.new(mode, size, color)
         image = ImageRepr(image)
         parser.env[name] = image
@@ -198,10 +200,9 @@ def paste_statement(p: list) -> None:
     img2.image.paste(img1.image, xy, mask=mask)
     return None
 
-@parser.production('expr : PUTPIXEL variable ntuple COLOR ntuple')
-@parser.production('expr : PUTPIXEL variable ntuple COLOR number')
+@parser.production('expr : PUTPIXEL variable ntuple color')
 def putpixel(p: list) -> None:
-    coords, color = p[-3], p[-1]
+    coords, color = p[2], p[-1]
     img = get_var(p[1])
     img.image.putpixel(coords, color)
     return None
