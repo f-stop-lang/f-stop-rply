@@ -1,19 +1,18 @@
-from PIL import ImageOps, ImageDraw, ImageFilter
+
+from typing import Callable
+
+from PIL import ImageOps, ImageDraw, ImageFont, ImageFilter
 from PIL.Image import Image
 
 from .parser import parser, get_var
+from .objects import ImageRepr
 
-def operation(p, operation, *, mode: str = 'RGBA', *args, **kwargs):
+def operation(p: list, operation: Callable, *, mode: str = 'RGBA', *args, **kwargs):
     image = get_var(p[1])
     image.image = operation(
         image.image.convert(mode),
         *args, **kwargs
     )
-    return None
-
-def image_draw(img, operation: str, *args, **kwargs) -> None:
-    cursor = ImageDraw.Draw(img.image)
-    getattr(cursor, operation)(*args, **kwargs)
     return None
 
 @parser.production('expr : INVERT variable')
@@ -99,3 +98,62 @@ def mode_filter(p: list) -> None:
 def median_filter(p: list) -> None:
     deg = p[-1] if len(p) == 3 else 3
     return operation(p, Image.filter, ImageFilter.MedianFilter, deg)
+
+# ImageDraw operations
+
+def draw(img: ImageRepr, operation: str, *args, **kwargs) -> ImageDraw.Draw:
+    img = get_var(img)
+    cursor = ImageDraw.Draw(img)
+    operation = getattr(cursor, operation)
+    operation(*args, **kwargs)
+    return cursor
+
+@parser.production('font : FONT string')
+@parser.production('font : FONT LEFT_PAREN string COMMA number RIGHT_PAREN')
+def get_font(p: list) -> ImageFont.FreeTypeFont:
+    if len(p) == 2:
+        return ImageFont.truetype(p[1])
+    else:
+        return ImageFont.truetype(p[2], p[4])
+
+@parser.production('expr : TEXT variable string ntuple')
+@parser.production('expr : TEXT variable string ntuple font')
+@parser.production('expr : TEXT variable string ntuple color')
+@parser.production('expr : TEXT variable string ntuple font color')
+def write_text(p: list) -> ImageDraw.Draw:
+    coords, text = p[3], p[2]
+    fill = p[-1] if len(p) > 4 and not isinstance(p, ImageFont.FreeTypeFont) else None
+    font = p[4] if len(p) > 4 and isinstance(p[4], ImageFont.FreeTypeFont) else None
+    return draw(p[1], 'text', xy=coords, text=text, fill=fill, font=font)
+
+
+@parser.production('expr : LINE variable ntuple')
+@parser.production('expr : LINE variable ntuple color')
+def draw_line(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 4 else None
+    return draw(p[1], 'line', xy=p[2], fill=fill)
+
+@parser.production('expr : LINE variable ntuple number')
+@parser.production('expr : LINE variable ntuple number color')
+def draw_line_w(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 5 else None
+    return draw(p[1], 'line', xy=p[2], fill=fill, width=p[3])
+
+
+@parser.production('expr : ELLIPSE variable ntuple')
+@parser.production('expr : ELLIPSE variable ntuple color')
+def draw_ellipse(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 4 else None
+    return draw(p[1], 'ellipse', xy=p[2], fill=fill)
+
+@parser.production('expr : ELLIPSE variable ntuple number')
+@parser.production('expr : ELLIPSE variable ntuple number color')
+def draw_ellipse_w(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 5 else None
+    return draw(p[1], 'ellipse', xy=p[2], fill=fill, width=p[3])
+
+@parser.production('expr : DOT variable ntuple')
+@parser.production('expr : DOT variable ntuple color')
+def draw_dot(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 4 else None
+    return draw(p[1], 'point', xy=p[2], fill=fill)
