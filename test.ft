@@ -12,6 +12,7 @@ PASTE img ON bg (100, 100)
 PUTPIXEL img (10, 10) COLOR 255
 BLEND bg, overlay ALPHA 0.5 AS blended
 TEXT blended "ur mom sus" (10, 10) COLOR (255, 0, 0)
+LINE blended (0, 0, 100, 100) COLOR (255, 0, 0)
 SHOW blended "view.png"
 ECHO "amogus sus"
 CLOSE img
