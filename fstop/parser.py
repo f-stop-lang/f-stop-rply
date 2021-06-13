@@ -48,20 +48,38 @@ def string(p: list) -> str:
         return img.image.mode
 
 @parser.production('number : INTEGER')
+@parser.production('number : FLOAT')
 @parser.production('number : WIDTH variable')
 @parser.production('number : HEIGHT variable')
 def integer(p: list) -> int:
     if len(p) == 1:
-        return int(p[0].getstr())
+        string = p[0].getstr()
+        return (
+            float(string) if p[0].gettokentype() == "FLOAT" else int(string)
+        )
     else:
         img = get_var(p[1])
         return (
             img.image.width if p[0].gettokentype() == "WIDTH" else img.image.height
         )
 
-@parser.production('float : FLOAT')
-def float_num(p: list) -> float:
-    return float(p[0].getstr())
+@parser.production('number : number ADD number')
+@parser.production('number : number SUB number')
+@parser.production('number : number MUL number')
+@parser.production('number : number DIV number')
+@parser.production('number : number EXP number')
+@parser.production('number : number FLOOR_DIV number')
+def numerical_operations(p: list):
+    x, y = p[0], p[2]
+    mapping = {
+        'ADD': x + y,
+        'SUB': x - y,
+        'MUL': x * y,
+        'DIV': x / y,
+        'EXP': x ** y,
+        'FLOOR_DIV': x // y,
+    }
+    return mapping.get(p[1].gettokentype(), float('NaN'))
     
 @parser.production('variable : VARIABLE')
 def variable(p: list) -> str:
@@ -116,7 +134,7 @@ def append_seq(p: list) -> None:
     seq = get_var(p[-1], 'seq')
     return seq.append(img)
 
-@parser.production('expr : BLEND variable COMMA variable ALPHA float AS variable')
+@parser.production('expr : BLEND variable COMMA variable ALPHA number AS variable')
 def blend(p: list) -> Image:
     backg, overlay, alpha, name = p[1], p[3], p[-3], p[-1]
     img1, img2 = get_var(backg), get_var(overlay)
