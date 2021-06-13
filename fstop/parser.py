@@ -6,8 +6,6 @@ from rply import ParserGenerator, Token
 from .lexer import generator
 from .objects import ImageRepr
 
-print([x.name for x in generator.rules])
-
 parser = ParserGenerator(
     [
         l.name for l in generator.rules
@@ -87,7 +85,7 @@ def ntuple(p: list) -> tuple:
     else:
         return p[0] + (p[1],) if len(p) == 3 else p[0]
 
-@parser.production('sequence_start : LEFT_BR variable COMMA')
+@parser.production('sequence_start : LEFT_BR')
 def seq_start(p: list) -> list:
     return [p[0]]
 

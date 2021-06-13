@@ -1,15 +1,13 @@
 from PIL import ImageOps, ImageDraw
 
-from .parser import parser
+from .parser import parser, get_var
 
 def operation(p, operation, *args, **kwargs):
-    if not (image := parser.env.get(p[1])):
-        raise NameError("Undefined image '%s'" % p[1])
-    else:
-        image.image = operation(
-            image.image.convert("RGB"),
-            *args, **kwargs
-        )
+    image = get_var(p[1])
+    image.image = operation(
+        image.image.convert("RGB"),
+        *args, **kwargs
+    )
     return None
 
 def image_draw(img, operation: str, *args, **kwargs) -> None:
