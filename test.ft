@@ -1,14 +1,23 @@
 // blend 2 images together
 
 OPEN "./assets/test.png" AS img
-NEW "RGB" SIZE img COLOR (255, 0, 0) AS bg
+NEW [img,] AS var
+NEW "RGB" (WIDTH img, HEIGHT img + 10 - 10) COLOR (0, 0, 255) AS bg
 CONVERT img MODE bg
+CLONE img AS overlay
 INVERT img
 SOLARIZE img
-ROTATE img -40
-PASTE img ON bg (10, 10)
-PUTPIXEL img (10, 10) COLOR 255
-SHOW bg "view.png"
+ROTATE img -40.0
+PASTE img ON bg (100, 100)
+PUTPIXEL img (10, 10 - 2) COLOR 120
+BLEND bg, overlay ALPHA 1 - 0.5 AS blended
+TEXT blended "ur mom sus __ !!!!" (10, 10) COLOR (255, 0, 0)
+LINE blended (0, 0, 100, 100) COLOR (255, 0, 0)
+DOT blended (100, 20)
+RECTANGLE blended (50, 50, 200, 200) 10 COLOR (255, 0, 0)
+ARC blended (10, 100, 100, 100) 10, 100 COLOR (0, 0, 255)
+SHOW blended "view.png"
 ECHO "amogus sus"
 CLOSE img
 CLOSE bg
+CLOSE blended

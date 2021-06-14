@@ -1,35 +1,45 @@
-from PIL import Image as PIL_Image
+from typing import Optional, Union, Any
+
+from PIL import ImageSequence, Image
 from rply import ParserGenerator, Token
 
-from .objects import Image
+from .lexer import generator
+from .objects import ImageRepr
 
 parser = ParserGenerator(
     [
-        'INTEGER', 'FLOAT', 'STRING', 'NUMBER_TUPLE', 'EQUAl',
-        'LEFT_PAREN', 'RIGHT_PAREN', 
-        'OPEN', 'AS', 'SAVE', 'CLOSE', 'SHOW', 'BLEND', 'RESIZE', 'ROTATE', 'MASK', 'CONVERT', 'CLONE', 'PUTPIXEL',
-        'NEW', 'WIDTH', 'HEIGHT', 'COLOR', 'ALPHA', 'PASTE', 'SIZE', 'MODE',
-        'VARIABLE', 'COMMA', 'ON', 'ECHO',
-        'INVERT', 'SOLAR', 'MIRROR', 'FLIP',
+        l.name for l in generator.rules
     ],
     
     precedence = [
-        ('left', ['OPEN', 'SAVE', 'AS']),
-        ('left', ['INVERT'])
+        ('left', ['ADD', 'SUB']),
+        ('left', ['MUL', 'DIV', 'FLOOR_DIV']),
+        ('left', ['EXP']),
     ],
 )
+parser.env = {}
+
+def get_var(name: str, type_: type = ImageRepr) -> Optional[ImageRepr]:
+    if not isinstance(var := parser.env.get(name), type_):
+        raise NameError("Undefined variable '%s'" % name)
+    return var
+
+# productions
+# program statements
 
 @parser.production("main : statements")
-def program(p: list):
+def program(p: list) -> list:
     return p[0]
 
 @parser.production("statements : statements expr")
-def statements(p: list):
+def statements(p: list) -> list:
     return p[0] + [p[1]]
 
 @parser.production("statements : expr")
-def expr(p: list):
+def expr(p: list) -> list:
     return [p[0]]
+
+# object type productions
 
 @parser.production('string : STRING')
 @parser.production('string : MODE variable')
@@ -37,174 +47,217 @@ def string(p: list) -> str:
     if len(p) == 1:
         return p[0].getstr().strip("'").strip('"')
     else:
-        if not (img := parser.env.get(p[-1])):
-            raise NameError("Undefined image '%s'" % p[-1])
-        else:
-            return img.image.mode
+        img = get_var(p[1])
+        return img.image.mode
 
 @parser.production('number : INTEGER')
+@parser.production('number : FLOAT')
 @parser.production('number : WIDTH variable')
 @parser.production('number : HEIGHT variable')
-def integer(p: list) -> int:
+def number(p: list) -> float:
     if len(p) == 1:
-        return int(p[0].getstr())
+        string = p[0].getstr()
+        return (
+            float(string) if p[0].gettokentype() == "FLOAT" else int(string)
+        )
     else:
-        if not (img := parser.env.get(p[-1])):
-            raise NameError("Undefined image '%s'" % p[-1])
-        else:
-            return (
-                img.image.width if p[0].gettokentype() == "WIDTH" else img.image.height
-            )
+        img = get_var(p[1])
+        return (
+            img.image.width if p[0].gettokentype() == "WIDTH" else img.image.height
+        )
 
-@parser.production('float : FLOAT')
-def float_(p: list) -> float:
-    return float(p[0].getstr())
+@parser.production('number : number ADD number')
+@parser.production('number : number SUB number')
+@parser.production('number : number MUL number')
+@parser.production('number : number DIV number')
+@parser.production('number : number EXP number')
+@parser.production('number : number FLOOR_DIV number')
+def numerical_operations(p: list) -> float:
+    x, y = p[0], p[2]
+    token = p[1].gettokentype()
+
+    if token == "ADD":
+        return x + y
+    elif token == "SUB":
+        return x - y
+    elif token == "MUL":
+        return x * y
+    elif token == "DIV":
+        return x / y
+    elif token == "EXP":
+        return x ** y
+    else:
+        return x // y
     
 @parser.production('variable : VARIABLE')
-def variable_name(p: list) -> str:
+def variable(p: list) -> str:
     return p[0].getstr()
 
-@parser.production('ntuple : LEFT_PAREN number COMMA number RIGHT_PAREN')
-@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA RIGHT_PAREN')
-@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number RIGHT_PAREN')
-@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number COMMA RIGHT_PAREN')
-@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number COMMA number RIGHT_PAREN')
-@parser.production('ntuple : LEFT_PAREN number COMMA number COMMA number COMMA number COMMA RIGHT_PAREN')
-@parser.production('ntuple : SIZE variable')
-def num_tuple(p: list) -> tuple:
-    if len(p) == 2:
-        if not (img := parser.env.get(p[-1])):
-            raise NameError("Undefined image '%s'" % p[-1])
-        else:
-            return img.image.size
-    else:
-        return tuple(x for x in p if not isinstance(x, Token))
+@parser.production('ntuple_start : LEFT_PAREN number COMMA')
+def ntuple_start(p: list) -> tuple:
+    return (p[1],)
 
-@parser.production('expr : BLEND variable COMMA variable ALPHA float AS variable')
+@parser.production('ntuple_start : ntuple_start number COMMA')
+def ntuple_body(p: list) -> tuple:
+    return p[0] + (p[1],)
+
+@parser.production('ntuple : ntuple_start RIGHT_PAREN')
+@parser.production('ntuple : ntuple_start number RIGHT_PAREN')
+@parser.production('ntuple : SIZE variable')
+def ntuple(p: list) -> tuple:
+    if isinstance(p[0], Token):
+        img = get_var(p[1])
+        return img.image.size
+    else:
+        return p[0] + (p[1],) if len(p) == 3 else p[0]
+
+@parser.production('sequence_start : LEFT_BR')
+def seq_start(p: list) -> list:
+    return [p[0]]
+
+@parser.production('sequence_start : sequence_start variable COMMA')
+def seq_body(p: list) -> list:
+    return p[0] + [p[1]]
+
+@parser.production('sequence : sequence_start RIGHT_BR')
+@parser.production('sequence : sequence_start variable RIGHT_BR')
+@parser.production('sequence : SEQUENCE variable')
+def sequence(p: list) -> list:
+    if isinstance(p[0], Token):
+        img = get_var(p[1])
+        return list(ImageSequence.Iterator(img))
+    else:
+        return p[0] + [p[1]] if len(p) == 3 else p[0]
+
+@parser.production('color : COLOR ntuple')
+@parser.production('color : COLOR number')
+def color_st(p: list) -> Union[tuple, int]:
+    return p[-1]
+
+# operation productions
+
+@parser.production('expr : APPEND variable TO variable')
+def append_seq(p: list) -> None:
+    img = get_var(p[1])
+    seq = get_var(p[-1], list)
+    return seq.append(img)
+
+@parser.production('expr : BLEND variable COMMA variable ALPHA number AS variable')
 def blend(p: list) -> Image:
     backg, overlay, alpha, name = p[1], p[3], p[-3], p[-1]
-
-    if not (img1 := parser.env.get(backg)):
-        raise NameError("Undefined image '%s'" % backg)
-    if not (img2 := parser.env.get(overlay)):
-        raise NameError("Undefined image '%s'" % overlay)
-
-    img = PIL_Image.blend(img1.image, img2.image, alpha=alpha)
-    image = Image(img, name=name)
+    img1, img2 = get_var(backg), get_var(overlay)
+    image = Image.blend(img1.image, img2.image, alpha=alpha)
+    image = ImageRepr(image)
     parser.env[name] = image
     return image
 
+@parser.production('expr : NEW sequence AS variable')
 @parser.production('expr : NEW string ntuple AS variable')
-@parser.production('expr : NEW string ntuple COLOR ntuple AS variable')
-@parser.production('expr : NEW string ntuple COLOR number AS variable')
-def new_statement(p: list) -> Image:
-    mode, size, name = p[1], p[2], p[-1]
-    color = p[4] if len(p) == 7 else 0
-    img = PIL_Image.new(mode, size, color)
-    image = Image(img, name=name)
-    parser.env[name] = image
-    return image
+@parser.production('expr : NEW string ntuple color AS variable')
+def new_statement(p: list) -> Optional[ImageRepr]:
+
+    if len(p) == 4:
+        parser.env[p[-1]] = p[1]
+    else:
+        mode, size, name = p[1], p[2], p[-1]
+        color = p[3] if len(p) == 6 else 0
+        image = Image.new(mode, size, color)
+        image = ImageRepr(image)
+        parser.env[name] = image
+        return image
 
 @parser.production('expr : OPEN string AS variable')
 def open_statement(p: list) -> Image:
     filename, name = p[1], p[-1]
-    img = PIL_Image.open(filename)
-    image = Image(img, name=name)
+    image = Image.open(filename)
+    image = ImageRepr(image)
     parser.env[name] = image
     return image
 
 @parser.production('expr : CLONE variable AS variable')
-def clone_statement(p: list) -> Image:
-    if not (img := parser.env.get(p[1])):
-        raise NameError("Undefined image '%s'" % p[1])
-    else:
-        name = p[-1]
-        clone = img.image.copy()
-        image = Image(clone, name=name)
-        parser.env[name] = image 
-        return image
+def clone_statement(p: list) -> None:
+    img = get_var(p[1])
+    name = p[-1]
+    image = img.image.copy()
+    image = ImageRepr(image)
+    parser.env[name] = image 
+    return image
 
 @parser.production('expr : CONVERT variable string')
-def convert_statement(p: list) -> Image:
-    if not (img := parser.env.get(p[1])):
-        raise NameError("Undefined image '%s'" % p[1])
-    else:
-        img.image = img.image.convert(p[-1])
+def convert_statement(p: list) -> None:
+    img = get_var(p[1])
+    img.image = img.image.convert(p[-1])
     return None
 
 @parser.production('expr : SAVE variable string')
 def save_statement(p: list) -> str:
-    if not (img := parser.env.get(p[-2])):
-        raise NameError("Undefined image '%s'" % p[-2])
-    else:
+    img = get_var(p[1], (ImageRepr, list))
+    if isinstance(img, ImageRepr):
         img.image.save(p[-1])
+    else:
+        img[0].save(p[-1], 
+            save_all=True,
+            append_images=img[1:], 
+            optimize=True,
+        )
     return p[-1]
 
 @parser.production('expr : CLOSE variable')
 def close_statement(p: list) -> None:
-    if not (img := parser.env.get(p[-1])):
-        raise NameError("Undefined image '%s'" % p[-1])
-    else:
-        img.image.close()
+    img = get_var(p[1])
+    img.image.close()
     return None
 
 @parser.production('expr : RESIZE variable ntuple')
-def resize_statement(p: list) -> None:
-    if not (img := parser.env.get(p[1])):
-        raise NameError("Undefined image '%s'" % p[1])
-    else:
-        img.image = img.image.resize(p[-1])
-    return None
+def resize_statement(p: list) -> tuple:
+    img = get_var(p[1])
+    img.image = img.image.resize(p[-1])
+    return p[-1]
 
 @parser.production('expr : ROTATE variable number')
-def rotate_statement(p: list) -> None:
-    if not (img := parser.env.get(p[1])):
-        raise NameError("Undefined image '%s'" % p[1])
-    else:
-        img.image = img.image.rotate(p[-1])
-    return None
+def rotate_statement(p: list) -> float:
+    img = get_var(p[1])
+    img.image = img.image.rotate(p[-1])
+    return p[-1]
 
 @parser.production('expr : PASTE variable ON variable')
 @parser.production('expr : PASTE variable ON variable ntuple')
 @parser.production('expr : PASTE variable ON variable MASK variable ntuple')
 def paste_statement(p: list) -> None:
     image, snippet = p[1], p[3]
-
-    if not (img1 := parser.env.get(image)):
-        raise NameError("Undefined image '%s'" % image)
-    if not (img2 := parser.env.get(snippet)):
-        raise NameError("Undefined image '%s'" % snippet)
-
+    img1, img2 = get_var(image), get_var(snippet)
     xy = (0, 0) if len(p) == 4 else p[-1]
     mask = p[-2] if len(p) == 7 else None
     img2.image.paste(img1.image, xy, mask=mask)
     return None
 
-@parser.production('expr : PUTPIXEL variable ntuple COLOR ntuple')
-@parser.production('expr : PUTPIXEL variable ntuple COLOR number')
-def putpixel(p: list) -> None:
-    coords, color = p[-3], p[-1]
-    if not (img := parser.env.get(p[1])):
-        raise NameError("Undefined image '%s'" % p[1])
-    else:
-        img.image.putpixel(coords, color)
-    return None
-
+@parser.production('expr : PUTPIXEL variable ntuple color')
+def putpixel(p: list) -> tuple:
+    coords, color = p[2], p[-1]
+    img = get_var(p[1])
+    img.image.putpixel(coords, color)
+    return coords
+ 
 @parser.production('expr : SHOW variable')
 @parser.production('expr : SHOW variable string')
-def show_statement(p: list) -> None:
-    if not (img := parser.env.get(p[1])):
-        raise NameError("Undefined image '%s'" % p[1])
-    else:
-        title = p[-1] if len(p) == 3 else None
-        img.image.show(title=title)
+def show_statement(p: list) -> Optional[str]:
+    img = get_var(p[1])
+    title = p[-1] if len(p) == 3 else None
+    img.image.show(title=title)
+    return title
+
+@parser.production('expr : CROP variable')
+@parser.production('expr : CROP variable ntuple')
+def crop_statement(p: list) -> None:
+    img = get_var(p[1])
+    box = p[-1] if len(p) == 3 else None
+    img.image = img.image.crop(box=box)
     return None
 
+@parser.production('expr : ECHO expr')
 @parser.production('expr : ECHO string')
 @parser.production('expr : ECHO number')
-@parser.production('expr : ECHO float')
-@parser.production('expr : ECHO variable')
 @parser.production('expr : ECHO ntuple')
-def echo(p: list) -> None:
+def echo(p: list) -> Any:
     print(p[-1])
-    return None
+    return p[-1]

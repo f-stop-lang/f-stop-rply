@@ -1,5 +1,5 @@
 from .lexer import generator
-from .objects import Image
 from .parser import parser
+from .objects import ImageRepr
 
 from . import operations
