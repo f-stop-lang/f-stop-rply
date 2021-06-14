@@ -19,9 +19,8 @@ parser = ParserGenerator(
 )
 parser.env = {}
 
-def get_var(name: str, type_: str = 'var') -> Optional[ImageRepr]:
-    obj = ImageRepr if type_ == 'var' else list
-    if not isinstance(var := parser.env.get(name), obj):
+def get_var(name: str, type_: str = ImageRepr) -> Optional[ImageRepr]:
+    if not isinstance(var := parser.env.get(name), type_):
         raise NameError("Undefined variable '%s'" % name)
     return var
 
@@ -125,7 +124,7 @@ def seq_body(p: list) -> list:
 @parser.production('sequence : SEQUENCE variable')
 def sequence(p: list) -> list:
     if isinstance(p[0], Token):
-        img = get_var(p[1], 'seq')
+        img = get_var(p[1])
         return list(ImageSequence.Iterator(img))
     else:
         return p[0] + [p[1]] if len(p) == 3 else p[0]
@@ -140,7 +139,7 @@ def color_st(p: list) -> Union[tuple, int]:
 @parser.production('expr : APPEND variable TO variable')
 def append_seq(p: list) -> None:
     img = get_var(p[1])
-    seq = get_var(p[-1], 'seq')
+    seq = get_var(p[-1], list)
     return seq.append(img)
 
 @parser.production('expr : BLEND variable COMMA variable ALPHA number AS variable')
@@ -192,8 +191,15 @@ def convert_statement(p: list) -> None:
 
 @parser.production('expr : SAVE variable string')
 def save_statement(p: list) -> str:
-    img = get_var(p[1])
-    img.image.save(p[-1])
+    img = get_var(p[1], (ImageRepr, list))
+    if isinstance(img, ImageRepr):
+        img.image.save(p[-1])
+    else:
+        img[0].save(p[-1], 
+            save_all=True,
+            append_images=img[1:], 
+            optimize=True,
+        )
     return p[-1]
 
 @parser.production('expr : CLOSE variable')
