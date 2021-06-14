@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Any
 
 from PIL import ImageSequence, Image
 from rply import ParserGenerator, Token
@@ -19,7 +19,7 @@ parser = ParserGenerator(
 )
 parser.env = {}
 
-def get_var(name: str, type_: str = ImageRepr) -> Optional[ImageRepr]:
+def get_var(name: str, type_: type = ImageRepr) -> Optional[ImageRepr]:
     if not isinstance(var := parser.env.get(name), type_):
         raise NameError("Undefined variable '%s'" % name)
     return var
@@ -28,15 +28,15 @@ def get_var(name: str, type_: str = ImageRepr) -> Optional[ImageRepr]:
 # program statements
 
 @parser.production("main : statements")
-def program(p: list):
+def program(p: list) -> list:
     return p[0]
 
 @parser.production("statements : statements expr")
-def statements(p: list):
+def statements(p: list) -> list:
     return p[0] + [p[1]]
 
 @parser.production("statements : expr")
-def expr(p: list):
+def expr(p: list) -> list:
     return [p[0]]
 
 # object type productions
@@ -54,7 +54,7 @@ def string(p: list) -> str:
 @parser.production('number : FLOAT')
 @parser.production('number : WIDTH variable')
 @parser.production('number : HEIGHT variable')
-def integer(p: list) -> int:
+def number(p: list) -> float:
     if len(p) == 1:
         string = p[0].getstr()
         return (
@@ -72,7 +72,7 @@ def integer(p: list) -> int:
 @parser.production('number : number DIV number')
 @parser.production('number : number EXP number')
 @parser.production('number : number FLOOR_DIV number')
-def numerical_operations(p: list):
+def numerical_operations(p: list) -> float:
     x, y = p[0], p[2]
     token = p[1].gettokentype()
 
@@ -154,7 +154,7 @@ def blend(p: list) -> Image:
 @parser.production('expr : NEW sequence AS variable')
 @parser.production('expr : NEW string ntuple AS variable')
 @parser.production('expr : NEW string ntuple color AS variable')
-def new_statement(p: list) -> Optional[Image.Image]:
+def new_statement(p: list) -> Optional[ImageRepr]:
 
     if len(p) == 4:
         parser.env[p[-1]] = p[1]
@@ -215,10 +215,10 @@ def resize_statement(p: list) -> None:
     return None
 
 @parser.production('expr : ROTATE variable number')
-def rotate_statement(p: list) -> None:
+def rotate_statement(p: list) -> float:
     img = get_var(p[1])
     img.image = img.image.rotate(p[-1])
-    return None
+    return p[-1]
 
 @parser.production('expr : PASTE variable ON variable')
 @parser.production('expr : PASTE variable ON variable ntuple')
@@ -232,19 +232,19 @@ def paste_statement(p: list) -> None:
     return None
 
 @parser.production('expr : PUTPIXEL variable ntuple color')
-def putpixel(p: list) -> None:
+def putpixel(p: list) -> tuple:
     coords, color = p[2], p[-1]
     img = get_var(p[1])
     img.image.putpixel(coords, color)
-    return None
+    return coords
  
 @parser.production('expr : SHOW variable')
 @parser.production('expr : SHOW variable string')
-def show_statement(p: list) -> None:
+def show_statement(p: list) -> Optional[str]:
     img = get_var(p[1])
     title = p[-1] if len(p) == 3 else None
     img.image.show(title=title)
-    return None
+    return title
 
 @parser.production('expr : CROP variable')
 @parser.production('expr : CROP variable ntuple')
@@ -258,5 +258,6 @@ def crop_statement(p: list) -> None:
 @parser.production('expr : ECHO string')
 @parser.production('expr : ECHO number')
 @parser.production('expr : ECHO ntuple')
-def echo(p: list) -> None:
-    return print(p[-1])
+def echo(p: list) -> Any:
+    print(p[-1])
+    return p[-1]
