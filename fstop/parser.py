@@ -11,7 +11,11 @@ parser = ParserGenerator(
         l.name for l in generator.rules
     ],
     
-    precedence = [],
+    precedence = [
+        ('left', ['ADD', 'SUB']),
+        ('left', ['MUL', 'DIV', 'FLOOR_DIV']),
+        ('left', ['EXP']),
+    ],
 )
 parser.env = {}
 
@@ -71,15 +75,20 @@ def integer(p: list) -> int:
 @parser.production('number : number FLOOR_DIV number')
 def numerical_operations(p: list):
     x, y = p[0], p[2]
-    mapping = {
-        'ADD': x + y,
-        'SUB': x - y,
-        'MUL': x * y,
-        'DIV': x / y,
-        'EXP': x ** y,
-        'FLOOR_DIV': x // y,
-    }
-    return mapping.get(p[1].gettokentype(), float('NaN'))
+    token = p[1].gettokentype()
+
+    if token == "ADD":
+        return x + y
+    elif token == "SUB":
+        return x - y
+    elif token == "MUL":
+        return x * y
+    elif token == "DIV":
+        return x / y
+    elif token == "EXP":
+        return x ** y
+    else:
+        return x // y
     
 @parser.production('variable : VARIABLE')
 def variable(p: list) -> str:
@@ -112,7 +121,7 @@ def seq_body(p: list) -> list:
     return p[0] + [p[1]]
 
 @parser.production('sequence : sequence_start RIGHT_BR')
-@parser.production('sequence : sequence_start number RIGHT_BR')
+@parser.production('sequence : sequence_start variable RIGHT_BR')
 @parser.production('sequence : SEQUENCE variable')
 def sequence(p: list) -> list:
     if isinstance(p[0], Token):
@@ -240,5 +249,8 @@ def crop_statement(p: list) -> None:
     return None
 
 @parser.production('expr : ECHO expr')
+@parser.production('expr : ECHO string')
+@parser.production('expr : ECHO number')
+@parser.production('expr : ECHO ntuple')
 def echo(p: list) -> None:
     return print(p[-1])

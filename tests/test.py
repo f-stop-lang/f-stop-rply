@@ -12,5 +12,5 @@ if __name__ == '__main__':
     tokens = lexer.lex(string)
 
     print(
-        parser.parse(tokens)
+       parser.parse(tokens)
     )

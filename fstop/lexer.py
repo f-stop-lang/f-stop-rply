@@ -4,7 +4,7 @@ generator = LexerGenerator()
 
 generator.ignore(r'\s+')  # ignore all whitespace
 generator.ignore(r'//.*') # single line comment
-generator.ignore(r"/\*[.\n\r]*\*/") # multi-line comment
+generator.ignore(r"/\*([\n\r]|.)*\*/") # multi-line comment
 
 generator.add('STRING', r'''("[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*')''')
 generator.add('FLOAT', r'[+-]?(((([1-9][0-9]*)|0))?\.[0-9]+)|((([1-9][0-9]*)|0)\.[0-9]*)')
