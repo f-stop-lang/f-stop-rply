@@ -209,10 +209,10 @@ def close_statement(p: list) -> None:
     return None
 
 @parser.production('expr : RESIZE variable ntuple')
-def resize_statement(p: list) -> None:
+def resize_statement(p: list) -> tuple:
     img = get_var(p[1])
     img.image = img.image.resize(p[-1])
-    return None
+    return p[-1]
 
 @parser.production('expr : ROTATE variable number')
 def rotate_statement(p: list) -> float:
