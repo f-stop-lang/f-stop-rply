@@ -67,6 +67,10 @@ generator.add('FONT', r'FONT')
 generator.add('LINE', r'LINE')
 generator.add('ELLIPSE', r'ELLIPSE')
 generator.add('DOT', r'DOT')
+generator.add('ARC', r'ARC')
+generator.add('CHORD', r'CHORD')
+generator.add('POLYGON', r'POLYGON')
+generator.add('RECTANGLE', r'RECTANGLE')
 
 generator.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
 

@@ -13,6 +13,9 @@ PUTPIXEL img (10, 10 - 2) COLOR 120
 BLEND bg, overlay ALPHA 1 - 0.5 AS blended
 TEXT blended "ur mom sus __ !!!!" (10, 10) COLOR (255, 0, 0)
 LINE blended (0, 0, 100, 100) COLOR (255, 0, 0)
+DOT blended (100, 20)
+RECTANGLE blended (50, 50, 200, 200) 10 COLOR (255, 0, 0)
+ARC blended 10, 100 COLOR (0, 0, 255)
 SHOW blended "view.png"
 ECHO "amogus sus"
 CLOSE img

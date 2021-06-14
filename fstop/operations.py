@@ -153,8 +153,39 @@ def draw_ellipse_w(p: list) -> ImageDraw.Draw:
     fill = p[-1] if len(p) == 5 else None
     return draw(p[1], 'ellipse', xy=p[2], fill=fill, width=p[3])
 
+
 @parser.production('expr : DOT variable ntuple')
 @parser.production('expr : DOT variable ntuple color')
 def draw_dot(p: list) -> ImageDraw.Draw:
     fill = p[-1] if len(p) == 4 else None
     return draw(p[1], 'point', xy=p[2], fill=fill)
+
+@parser.production('expr : ARC variable number COMMA number')
+@parser.production('expr : ARC variable number COMMA number color')
+def draw_arc(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 6 else None
+    return draw(p[1], 'arc', start=p[2], end=p[4], fill=fill)
+
+@parser.production('expr : CHORD variable number COMMA number')
+@parser.production('expr : CHORD variable number COMMA number color')
+def draw_chord(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 6 else None
+    return draw(p[1], 'chord', start=p[2], end=p[4], fill=fill)
+
+@parser.production('expr : POLYGON variable ntuple')
+@parser.production('expr : POLYGON variable ntuple color')
+def draw_polygon(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 4 else None
+    return draw(p[1], 'polygon', xy=p[2], fill=fill)
+
+@parser.production('expr : RECTANGLE variable ntuple')
+@parser.production('expr : RECTANGLE variable ntuple color')
+def draw_rec(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 4 else None
+    return draw(p[1], 'rectangle', xy=p[2], fill=fill)
+
+@parser.production('expr : RECTANGLE variable ntuple number')
+@parser.production('expr : RECTANGLE variable ntuple number color')
+def draw_rec_w(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 5 else None
+    return draw(p[1], 'rectangle', xy=p[2], fill=fill, width=p[3])
