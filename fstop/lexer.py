@@ -15,6 +15,7 @@ generator.add('ON', r'ON')
 
 generator.add('ECHO', r'ECHO')
 generator.add('APPEND', r'APPEND')
+generator.add('STREAM', r'STREAM')
 
 generator.add('OPEN', r'OPEN')
 generator.add('AS', r'AS')
