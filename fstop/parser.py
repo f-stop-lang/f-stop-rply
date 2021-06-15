@@ -21,6 +21,7 @@ parser = ParserGenerator(
 )
 parser.env = {}
 parser._stream_env = []
+parser._streams = []
 
 def get_var(name: str, type_: type = ImageRepr) -> Optional[ImageRepr]:
     if not isinstance(var := parser.env.get(name), type_):
@@ -217,16 +218,31 @@ def convert_statement(p: list) -> None:
     return None
 
 @parser.production('expr : SAVE variable string')
+@parser.production('expr : SAVE variable STREAM string')
 def save_statement(p: list) -> str:
     img = get_var(p[1], (ImageRepr, list))
-    if isinstance(img, ImageRepr):
-        img.image.save(p[-1])
+    if len(p) == 3:
+        if isinstance(img, ImageRepr):
+            img.image.save(p[-1])
+        else:
+            img[0].save(p[-1], 
+                save_all=True,
+                append_images=img[1:], 
+                optimize=True,
+            )
     else:
-        img[0].save(p[-1], 
-            save_all=True,
-            append_images=img[1:], 
-            optimize=True,
-        )
+        buffer = BytesIO()
+        if isinstance(img, ImageRepr):
+            img.image.save(buffer, p[-1])
+        else:
+            img[0].save(buffer, 
+                p[-1],
+                save_all=True, 
+                append_images=img[1:],
+                optimize=True,
+            )
+        buffer.seek(0)
+        parser._streams.append(buffer)
     return p[-1]
 
 @parser.production('expr : CLOSE variable')
