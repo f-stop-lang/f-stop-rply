@@ -3,9 +3,6 @@ from io import BytesIO
 
 import fstop
 
-with open("test.ft") as ft:
-    string = ft.read()
-
 class Runner:
 
     def __init__(self) -> None:
@@ -14,6 +11,7 @@ class Runner:
         self.lexer  = self._lexergen.build()
         self.parser = self._parsergen.build()
         self.streams = []
+        self.reset()
 
     def execute(
         self, 
@@ -33,5 +31,8 @@ class Runner:
         return {}
 
 if __name__ == '__main__':
+    with open("test.ft") as ft:
+        string = ft.read()
+
     run = Runner()
-    run.execute(string)
+    print(run.execute(string))
