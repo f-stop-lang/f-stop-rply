@@ -18,6 +18,7 @@ parser = ParserGenerator(
     ],
 )
 parser.env = {}
+parser._stream_env = []
 
 def get_var(name: str, type_: type = ImageRepr) -> Optional[ImageRepr]:
     if not isinstance(var := parser.env.get(name), type_):
@@ -134,6 +135,10 @@ def sequence(p: list) -> list:
 def color_st(p: list) -> Union[tuple, int]:
     return p[-1]
 
+@parser.production('expr : ntuple ADD ntuple')
+def tuple_concat(p: list) -> tuple:
+    return p[0] + p[-1]
+
 # operation productions
 
 @parser.production('expr : APPEND variable TO variable')
@@ -166,9 +171,22 @@ def new_statement(p: list) -> Optional[ImageRepr]:
         parser.env[name] = image
         return image
 
+@parser.production('expr : MERGE string sequence AS variable')
+def merge_statement(p: list) -> Optional[ImageRepr]:
+    mode, bands, name = p[1], p[2], p[4]
+    image = Image.merge(mode, tuple(bands))
+    image = ImageRepr(image)
+    parser.env[name] = image
+    return image
+
 @parser.production('expr : OPEN string AS variable')
-def open_statement(p: list) -> Image:
-    filename, name = p[1], p[-1]
+@parser.production('expr : OPEN STREAM number AS variable')
+def open_statement(p: list) -> Optional[ImageRepr]:
+    if len(p) == 4:
+        filename, name = p[1], p[-1]
+    else:
+        index, name = p[2], p[-1]
+        filename = parser._stream_env[index]
     image = Image.open(filename)
     image = ImageRepr(image)
     parser.env[name] = image
