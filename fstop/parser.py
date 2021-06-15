@@ -1,5 +1,7 @@
 from typing import Optional, Union, Any
+from io import BytesIO
 
+import requests
 from PIL import ImageSequence, Image
 from rply import ParserGenerator, Token
 
@@ -181,12 +183,19 @@ def merge_statement(p: list) -> Optional[ImageRepr]:
 
 @parser.production('expr : OPEN string AS variable')
 @parser.production('expr : OPEN STREAM number AS variable')
+@parser.production('expr : OPEN URL string AS variable')
 def open_statement(p: list) -> Optional[ImageRepr]:
+
     if len(p) == 4:
         filename, name = p[1], p[-1]
-    else:
+    elif p[1].gettokentype() == "STREAM":
         index, name = p[2], p[-1]
         filename = parser._stream_env[index]
+    elif p[1].gettokentype() == "URL":
+        url, name = p[2], p[-1]
+        with requests.get(url) as resp:
+            filename = BytesIO(resp.content)
+            
     image = Image.open(filename)
     image = ImageRepr(image)
     parser.env[name] = image
