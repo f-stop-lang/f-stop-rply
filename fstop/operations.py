@@ -42,6 +42,8 @@ def solar_op(p: list) -> None:
 @parser.production('expr : POSTERIZE variable number')
 def poster_op(p: list) -> None:
     value = p[-1] if len(p) == 3 else 4
+    if value < 1 or value > 8:
+        raise Exception("Number must be an integer between 1 and 8")
     operation(p, ImageOps.solarize, value)
 
 # filters
