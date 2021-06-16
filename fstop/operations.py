@@ -232,7 +232,7 @@ def enhance(p: list, operation: str, *, degree: int) -> ImageEnhance._Enhance:
 def brighten(p: list) -> ImageEnhance.Brightness:
     return enhance(p, 'Brightness')
 
-@parser.production('expr : CONTAST variable number')
+@parser.production('expr : CONTRAST variable number')
 def contrast(p: list) -> ImageEnhance.Contrast:
     return enhance(p, 'Contrast')
 
