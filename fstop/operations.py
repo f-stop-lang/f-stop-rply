@@ -225,7 +225,7 @@ def draw_rec_w(p: list) -> ImageDraw.Draw:
 def enhance(p: list, operation: str) -> ImageEnhance._Enhance:
     img, degree = get_var(p[1]), p[-1]
     enhancer = getattr(ImageEnhance, operation)(img.image)
-    enhancer.enhance(degree)
+    img.image = enhancer.enhance(degree)
     return enhancer
 
 @parser.production('expr : BRIGHTEN variable number')
