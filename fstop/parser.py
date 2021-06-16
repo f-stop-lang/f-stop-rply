@@ -132,7 +132,7 @@ def sequence(p: list) -> list:
         return list(ImageSequence.Iterator(img))
     else:
         seq = p[0] + [p[1]] if len(p) == 3 else p[0]
-        return [get_var(i) for i in seq]
+        return [getattr(get_var(i), 'image', None) for i in seq]
 
 @parser.production('color : COLOR ntuple')
 @parser.production('color : COLOR number')
