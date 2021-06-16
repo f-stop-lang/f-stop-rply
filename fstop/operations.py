@@ -104,31 +104,31 @@ def edge_enhance(p: list) -> None:
 @parser.production('expr : BLUR variable number')
 def blur(p: list) -> None:
     radius = p[-1] if len(p) == 3 else 2
-    return operation(p, Image.filter, ImageFilter.GaussianBlur, radius)
+    return operation(p, Image.filter, ImageFilter.GaussianBlur(radius))
 
 @parser.production('expr : MAX_FILTER variable')
 @parser.production('expr : MAX_FILTER variable number')
 def max_filter(p: list) -> None:
     deg = p[-1] if len(p) == 3 else 3
-    return operation(p, Image.filter, ImageFilter.MaxFilter, deg)
+    return operation(p, Image.filter, ImageFilter.MaxFilter(deg))
 
 @parser.production('expr : MIN_FILTER variable')
 @parser.production('expr : MIN_FILTER variable number')
 def min_filter(p: list) -> None:
     deg = p[-1] if len(p) == 3 else 3
-    return operation(p, Image.filter, ImageFilter.MinFilter, deg)
+    return operation(p, Image.filter, ImageFilter.MinFilter(deg))
 
 @parser.production('expr : MODE_FILTER variable')
 @parser.production('expr : MODE_FILTER variable number')
 def mode_filter(p: list) -> None:
     deg = p[-1] if len(p) == 3 else 3
-    return operation(p, Image.filter, ImageFilter.ModeFilter, deg)
+    return operation(p, Image.filter, ImageFilter.ModeFilter(deg))
 
 @parser.production('expr : MEDIAN_FILTER variable')
 @parser.production('expr : MEDIAN_FILTER variable number')
 def median_filter(p: list) -> None:
     deg = p[-1] if len(p) == 3 else 3
-    return operation(p, Image.filter, ImageFilter.MedianFilter, deg)
+    return operation(p, Image.filter, ImageFilter.MedianFilter(deg))
 
 # ImageDraw operations
 
