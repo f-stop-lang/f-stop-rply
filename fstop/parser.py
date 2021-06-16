@@ -143,6 +143,10 @@ def color_st(p: list) -> Union[tuple, int]:
 def tuple_concat(p: list) -> tuple:
     return p[0] + p[-1]
 
+@parser.production('expr : sequence ADD sequence')
+def seq_concat(p: list) -> list:
+    return p[0] + p[-1]
+
 # operation productions
 
 @parser.production('expr : APPEND variable TO variable')

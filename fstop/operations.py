@@ -1,13 +1,13 @@
 
 from typing import Callable
 
-from PIL import ImageOps, ImageDraw, ImageFont, ImageFilter
+from PIL import ImageOps, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 from PIL.Image import Image
 
 from .parser import parser, get_var
 from .objects import ImageRepr
 
-def operation(p: list, operation: Callable, *args, **kwargs):
+def operation(p: list, operation: Callable, *args, **kwargs) -> None:
     image = get_var(p[1])
     mode = 'RGB' if operation.__module__ == 'PIL.ImageOps' else 'RGBA'
     image.image = operation(
@@ -18,31 +18,61 @@ def operation(p: list, operation: Callable, *args, **kwargs):
 
 @parser.production('expr : INVERT variable')
 def invert_op(p: list) -> None:
-    operation(p, ImageOps.invert)
+    return operation(p, ImageOps.invert)
 
 @parser.production('expr : GRAYSCALE variable')
 def grayscale_op(p: list) -> None:
-    operation(p, ImageOps.grayscale)
+    return operation(p, ImageOps.grayscale)
 
 @parser.production('expr : MIRROR variable')
 def mirror_op(p: list) -> None:
-    operation(p, ImageOps.mirror)
+    return operation(p, ImageOps.mirror)
 
 @parser.production('expr : FLIP variable')
 def flip_op(p: list) -> None:
-    operation(p, ImageOps.flip)
+    return operation(p, ImageOps.flip)
 
 @parser.production('expr : SOLARIZE variable')
 @parser.production('expr : SOLARIZE variable number')
 def solar_op(p: list) -> None:
     value = p[-1] if len(p) == 3 else 128
-    operation(p, ImageOps.solarize, value)
+    return operation(p, ImageOps.solarize, value)
 
 @parser.production('expr : POSTERIZE variable')
 @parser.production('expr : POSTERIZE variable number')
 def poster_op(p: list) -> None:
     value = p[-1] if len(p) == 3 else 4
-    operation(p, ImageOps.solarize, value)
+    return operation(p, ImageOps.posterize, value)
+
+@parser.production('expr : PAD variable ntuple')
+@parser.production('expr : PAD variable ntuple color')
+def pad_op(p: list) -> None:
+    color = p[-1] if len(p) == 4 else None
+    return operation(p, ImageOps.pad, size=p[2], color=color)
+
+@parser.production('expr : SCALE variable number')
+@parser.production('expr : SCALE variable number number')
+def scale_op(p: list) -> None:
+    resample = p[-1] if len(p) == 4 else 3
+    return operation(p, ImageOps.scale, factor=p[2], resample=resample)
+
+@parser.production('expr : EXPAND variable number')
+@parser.production('expr : EXPAND variable number color')
+def expand_op(p: list) -> None:
+    fill = p[-1] if len(p) == 4 else 0
+    return operation(p, ImageOps.expand, border=p[2], fill=fill)
+
+@parser.production('expr : EQUALIZE variable')
+@parser.production('expr : EQUALIZE variable MASK variable')
+def equalize_op(p: list) -> None:
+    mask = get_var(p[-1]) if len(p) == 4 else None
+    return operation(p, ImageOps.equalize, mask=mask)
+
+@parser.production('expr : FIT variable ntuple')
+@parser.production('expr : FIT variable ntuple number')
+def fit_op(p: list) -> None:
+    bleed = p[-1] if len(p) == 4 else 3
+    return operation(p, ImageOps.fit, size=p[2], bleed=bleed)
 
 # filters
 
@@ -102,7 +132,7 @@ def median_filter(p: list) -> None:
 
 # ImageDraw operations
 
-def draw(img: ImageRepr, operation: str, *args, **kwargs) -> ImageDraw.Draw:
+def draw(img: str, operation: str, *args, **kwargs) -> ImageDraw.Draw:
     img = get_var(img)
     cursor = ImageDraw.Draw(img.image)
     operation = getattr(cursor, operation)
@@ -189,3 +219,23 @@ def draw_rec(p: list) -> ImageDraw.Draw:
 def draw_rec_w(p: list) -> ImageDraw.Draw:
     fill = p[-1] if len(p) == 5 else None
     return draw(p[1], 'rectangle', xy=p[2], fill=fill, width=p[3])
+
+# ImageEnhance operations
+
+def enhance(p: list, operation: str, *, degree: int) -> ImageEnhance._Enhance:
+    img, degree = get_var(p[1]), p[-1]
+    enhancer = getattr(ImageEnhance, operation)(img.image)
+    enhancer.enhance(degree)
+    return enhancer
+
+@parser.production('expr : BRIGHTEN variable number')
+def brighten(p: list) -> ImageEnhance.Brightness:
+    return enhance(p, 'Brightness')
+
+@parser.production('expr : CONTAST variable number')
+def contrast(p: list) -> ImageEnhance.Contrast:
+    return enhance(p, 'Contrast')
+
+@parser.production('expr : COLORIZE variable number')
+def brighten(p: list) -> ImageEnhance.Color:
+    return enhance(p, 'Color')
