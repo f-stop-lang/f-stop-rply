@@ -116,8 +116,8 @@ def ntuple(p: list) -> tuple:
         return p[0] + (p[1],) if len(p) == 3 else p[0]
 
 @parser.production('sequence_start : LEFT_BR')
-def seq_start(p: list) -> list:
-    return [p[0]]
+def seq_start(_: list) -> list:
+    return []
 
 @parser.production('sequence_start : sequence_start variable COMMA')
 def seq_body(p: list) -> list:

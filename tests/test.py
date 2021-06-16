@@ -10,7 +10,6 @@ class Runner:
         self._parsergen = fstop.parser
         self.lexer  = self._lexergen.build()
         self.parser = self._parsergen.build()
-        self.streams = []
         self.reset()
 
     def execute(
@@ -21,12 +20,14 @@ class Runner:
 
         self._parsergen._stream_env = streams
         tokens = self.lexer.lex(code)
-        return self.parser.parse(tokens)
+        result = self.parser.parse(tokens)
+        self.streams = self._parsergen._saved_streams
+        return result
 
     def reset(self) -> Dict:
         self._parsergen.env = {}
         self._parsergen._stream_env = []
-        self._parser.gen._saved_streams = []
+        self._parsergen._saved_streams = []
         self.streams = []
         return {}
 
