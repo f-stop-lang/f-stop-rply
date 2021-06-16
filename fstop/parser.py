@@ -224,32 +224,46 @@ def convert_statement(p: list) -> None:
 
 @parser.production('expr : SAVE variable string')
 @parser.production('expr : SAVE variable STREAM string')
+@parser.production('expr : SAVE variable string LOOP number')
+@parser.production('expr : SAVE variable string DURATION number')
+@parser.production('expr : SAVE variable string DURATION number LOOP number')
+@parser.production('expr : SAVE variable STREAM string LOOP number')
+@parser.production('expr : SAVE variable STREAM string DURATION number')
+@parser.production('expr : SAVE variable STREAM string DURATION number LOOP number')
 def save_statement(p: list) -> Union[str, BytesIO]:
     img = get_var(p[1], (ImageRepr, list))
-    if len(p) == 3:
+    if isinstance(img, list):
+        options = {}
+        try:
+            i = p.index(Token('DURATION', r'DURATION')) + 1
+            j = p.index(Token('LOOP', r'LOOP')) + 1
+            options['duration'], options['loop'] = p[i], p[j]
+        except (ValueError, TypeError, IndexError):
+            pass
+    if Token('STREAM', r'STREAM') not in p:
         if isinstance(img, ImageRepr):
-            img.image.save(p[-1])
+            img.image.save(p[2])
         else:
-            img[0].save(p[-1], 
+            img[0].save(p[2], 
                 save_all=True,
                 append_images=img[1:], 
-                optimize=True,
+                optimize=True, **options,
             )
+        return p[2]
     else:
         buffer = BytesIO()
         if isinstance(img, ImageRepr):
-            img.image.save(buffer, p[-1])
+            img.image.save(buffer, p[3])
         else:
             img[0].save(buffer, 
-                p[-1],
+                p[3],
                 save_all=True, 
                 append_images=img[1:],
-                optimize=True,
+                optimize=True, **options,
             )
         buffer.seek(0)
         parser._saved_streams.append(buffer)
         return buffer
-    return p[-1]
 
 @parser.production('expr : CLOSE variable')
 def close_statement(p: list) -> None:
@@ -310,3 +324,9 @@ def crop_statement(p: list) -> None:
 def echo(p: list) -> Any:
     print(p[-1])
     return p[-1]
+
+@parser.production('expr : ECHO variable')
+def echo_var(p: list) -> Union[ImageRepr, list]:
+    var = get_var(p[1])
+    print(var)
+    return var
