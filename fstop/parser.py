@@ -149,7 +149,7 @@ def tuple_concat(p: list) -> tuple:
 def append_seq(p: list) -> None:
     img = get_var(p[1])
     seq = get_var(p[-1], list)
-    return seq.append(img)
+    return seq.append(img.image)
 
 @parser.production('expr : BLEND variable COMMA variable ALPHA number AS variable')
 def blend(p: list) -> Image:
