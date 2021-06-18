@@ -155,7 +155,7 @@ def write_text(p: list) -> ImageDraw.Draw:
     coords, text = p[3], p[2]
     fill = p[-1] if len(p) > 4 and not isinstance(p, ImageFont.FreeTypeFont) else None
     font = p[4] if len(p) > 4 and isinstance(p[4], ImageFont.FreeTypeFont) else None
-    return draw(p[1], 'text', xy=coords, text=text, fill=fill, font=font)
+    return draw(p[1], 'multiline_text', xy=coords, text=text, fill=fill, font=font)
 
 
 @parser.production('expr : LINE variable ntuple')
@@ -207,6 +207,12 @@ def draw_chord(p: list) -> ImageDraw.Draw:
 def draw_polygon(p: list) -> ImageDraw.Draw:
     fill = p[-1] if len(p) == 4 else None
     return draw(p[1], 'polygon', xy=p[2], fill=fill)
+
+@parser.production('expr : REGPOLYGON variable ntuple number')
+@parser.production('expr : REGPOLYGON variable ntuple number color')
+def draw_reg_polygon(p: list) -> ImageDraw.Draw:
+    fill = p[-1] if len(p) == 5 else None
+    return draw(p[1], bounding_circle=p[2], n_sides=p[3], fill=fill)
 
 @parser.production('expr : RECTANGLE variable ntuple')
 @parser.production('expr : RECTANGLE variable ntuple color')

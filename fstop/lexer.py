@@ -86,6 +86,7 @@ generator.add('ARC', r'ARC')
 generator.add('CHORD', r'CHORD')
 generator.add('POLYGON', r'POLYGON')
 generator.add('RECTANGLE', r'RECTANGLE')
+generator.add('REGPOLYGON', r'REGPOLYGON')
 
 generator.add('BRIGHTEN', r'BRIGHTEN')
 generator.add('CONTRAST', r'CONTRAST')
