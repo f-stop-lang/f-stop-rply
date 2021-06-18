@@ -212,7 +212,7 @@ def draw_polygon(p: list) -> ImageDraw.Draw:
 @parser.production('expr : REGPOLYGON variable ntuple number color')
 def draw_reg_polygon(p: list) -> ImageDraw.Draw:
     fill = p[-1] if len(p) == 5 else None
-    return draw(p[1], bounding_circle=p[2], n_sides=p[3], fill=fill)
+    return draw(p[1], 'regular_polygon', bounding_circle=p[2], n_sides=p[3], fill=fill)
 
 @parser.production('expr : RECTANGLE variable ntuple')
 @parser.production('expr : RECTANGLE variable ntuple color')
