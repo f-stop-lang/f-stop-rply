@@ -1,5 +1,7 @@
 from typing import Optional, Union, Any
+from io import BytesIO
 
+import requests
 from PIL import ImageSequence, Image
 from rply import ParserGenerator, Token
 
@@ -19,6 +21,7 @@ parser = ParserGenerator(
 )
 parser.env = {}
 parser._stream_env = []
+parser._saved_streams = []
 
 def get_var(name: str, type_: type = ImageRepr) -> Optional[ImageRepr]:
     if not isinstance(var := parser.env.get(name), type_):
@@ -113,8 +116,8 @@ def ntuple(p: list) -> tuple:
         return p[0] + (p[1],) if len(p) == 3 else p[0]
 
 @parser.production('sequence_start : LEFT_BR')
-def seq_start(p: list) -> list:
-    return [p[0]]
+def seq_start(_: list) -> list:
+    return []
 
 @parser.production('sequence_start : sequence_start variable COMMA')
 def seq_body(p: list) -> list:
@@ -128,15 +131,20 @@ def sequence(p: list) -> list:
         img = get_var(p[1])
         return list(ImageSequence.Iterator(img))
     else:
-        return p[0] + [p[1]] if len(p) == 3 else p[0]
+        seq = p[0] + [p[1]] if len(p) == 3 else p[0]
+        return [getattr(get_var(i), 'image', None) for i in seq]
 
 @parser.production('color : COLOR ntuple')
 @parser.production('color : COLOR number')
 def color_st(p: list) -> Union[tuple, int]:
     return p[-1]
 
-@parser.production('expr : ntuple ADD ntuple')
+@parser.production('ntuple : ntuple ADD ntuple')
 def tuple_concat(p: list) -> tuple:
+    return p[0] + p[-1]
+
+@parser.production('sequence : sequence ADD sequence')
+def seq_concat(p: list) -> list:
     return p[0] + p[-1]
 
 # operation productions
@@ -145,7 +153,7 @@ def tuple_concat(p: list) -> tuple:
 def append_seq(p: list) -> None:
     img = get_var(p[1])
     seq = get_var(p[-1], list)
-    return seq.append(img)
+    return seq.append(img.image)
 
 @parser.production('expr : BLEND variable COMMA variable ALPHA number AS variable')
 def blend(p: list) -> Image:
@@ -181,12 +189,19 @@ def merge_statement(p: list) -> Optional[ImageRepr]:
 
 @parser.production('expr : OPEN string AS variable')
 @parser.production('expr : OPEN STREAM number AS variable')
+@parser.production('expr : OPEN URL string AS variable')
 def open_statement(p: list) -> Optional[ImageRepr]:
+
     if len(p) == 4:
         filename, name = p[1], p[-1]
-    else:
+    elif p[1].gettokentype() == "STREAM":
         index, name = p[2], p[-1]
         filename = parser._stream_env[index]
+    elif p[1].gettokentype() == "URL":
+        url, name = p[2], p[-1]
+        with requests.get(url) as resp:
+            filename = BytesIO(resp.content)
+            
     image = Image.open(filename)
     image = ImageRepr(image)
     parser.env[name] = image
@@ -208,17 +223,47 @@ def convert_statement(p: list) -> None:
     return None
 
 @parser.production('expr : SAVE variable string')
-def save_statement(p: list) -> str:
+@parser.production('expr : SAVE variable STREAM string')
+@parser.production('expr : SAVE variable string LOOP number')
+@parser.production('expr : SAVE variable string DURATION number')
+@parser.production('expr : SAVE variable string DURATION number LOOP number')
+@parser.production('expr : SAVE variable STREAM string LOOP number')
+@parser.production('expr : SAVE variable STREAM string DURATION number')
+@parser.production('expr : SAVE variable STREAM string DURATION number LOOP number')
+def save_statement(p: list) -> Union[str, BytesIO]:
     img = get_var(p[1], (ImageRepr, list))
-    if isinstance(img, ImageRepr):
-        img.image.save(p[-1])
+    if isinstance(img, list):
+        options = {}
+        try:
+            i = p.index(Token('DURATION', r'DURATION')) + 1
+            j = p.index(Token('LOOP', r'LOOP')) + 1
+            options['duration'], options['loop'] = p[i], p[j]
+        except (ValueError, TypeError, IndexError):
+            pass
+    if Token('STREAM', r'STREAM') not in p:
+        if isinstance(img, ImageRepr):
+            img.image.save(p[2])
+        else:
+            img[0].save(p[2], 
+                save_all=True,
+                append_images=img[1:], 
+                optimize=True, **options,
+            )
+        return p[2]
     else:
-        img[0].save(p[-1], 
-            save_all=True,
-            append_images=img[1:], 
-            optimize=True,
-        )
-    return p[-1]
+        buffer = BytesIO()
+        if isinstance(img, ImageRepr):
+            img.image.save(buffer, p[3])
+        else:
+            img[0].save(buffer, 
+                p[3],
+                save_all=True, 
+                append_images=img[1:],
+                optimize=True, **options,
+            )
+        buffer.seek(0)
+        parser._saved_streams.append(buffer)
+        return buffer
 
 @parser.production('expr : CLOSE variable')
 def close_statement(p: list) -> None:
@@ -272,6 +317,31 @@ def crop_statement(p: list) -> None:
     img.image = img.image.crop(box=box)
     return None
 
+@parser.production('expr : SPREAD variable number')
+def spread_st(p: list) -> None:
+    img = get_var(p[1])
+    img.image = img.image.effect_spread(p[-1])
+    return None
+
+@parser.production('expr : PUTALPHA variable ON variable')
+def putalpha_st(p: list) -> None:
+    img2, img = get_var(p[1]), get_var(p[3])
+    img.image = img.image.putalpha(img2.image)
+    return None
+
+@parser.production('expr : REDUCE variable number')
+@parser.production('expr : REDUCE variable number ntuple')
+def reduce_st(p: list) -> None:
+    img = get_var(p[1])
+    box = p[-1] if len(p) == 4 else None
+    img.image = img.image.reduce(p[2], box=box)
+
+@parser.production('expr : SEEK variable number')
+def seek_st(p: list) -> int:
+    img = get_var(p[1])
+    img.image.seek(p[2])
+    return p[2]
+
 @parser.production('expr : ECHO expr')
 @parser.production('expr : ECHO string')
 @parser.production('expr : ECHO number')
@@ -279,3 +349,9 @@ def crop_statement(p: list) -> None:
 def echo(p: list) -> Any:
     print(p[-1])
     return p[-1]
+
+@parser.production('expr : ECHO variable')
+def echo_var(p: list) -> Union[ImageRepr, list]:
+    var = get_var(p[1])
+    print(var)
+    return var
