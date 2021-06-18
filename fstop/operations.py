@@ -42,6 +42,8 @@ def solar_op(p: list) -> None:
 @parser.production('expr : POSTERIZE variable number')
 def poster_op(p: list) -> None:
     value = p[-1] if len(p) == 3 else 4
+    if value < 1 or value > 8:
+        raise Exception("Value must be an integer between 1 and 8")
     return operation(p, ImageOps.posterize, value)
 
 @parser.production('expr : PAD variable ntuple')
