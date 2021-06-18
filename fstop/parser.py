@@ -317,6 +317,31 @@ def crop_statement(p: list) -> None:
     img.image = img.image.crop(box=box)
     return None
 
+@parser.production('expr : SPREAD variable number')
+def spread_st(p: list) -> None:
+    img = get_var(p[1])
+    img.image = img.image.effect_spread(p[-1])
+    return None
+
+@parser.production('expr : PUTALPHA variable ON variable')
+def putalpha_st(p: list) -> None:
+    img2, img = get_var(p[1]), get_var(p[3])
+    img.image = img.image.putalpha(img2.image)
+    return None
+
+@parser.production('expr : REDUCE variable number')
+@parser.production('expr : REDUCE variable number ntuple')
+def reduce_st(p: list) -> None:
+    img = get_var(p[1])
+    box = p[-1] if len(p) == 4 else None
+    img.image = img.image.reduce(p[2], box=box)
+
+@parser.production('expr : SEEK variable number')
+def seek_st(p: list) -> int:
+    img = get_var(p[1])
+    img.image.seek(p[2])
+    return p[2]
+
 @parser.production('expr : ECHO expr')
 @parser.production('expr : ECHO string')
 @parser.production('expr : ECHO number')

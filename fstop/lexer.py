@@ -47,6 +47,11 @@ generator.add('MODE', r'MODE')
 generator.add('CROP', r'CROP')
 generator.add('MERGE', r'MERGE')
 
+generator.add('SPREAD', r'SPREAD')
+generator.add('PUTALPHA', r'PUTALPHA')
+generator.add('REDUCE', r'REDUCE')
+generator.add('SEEK', r'SEEK')
+
 generator.add('INVERT', r'INVERT')
 generator.add('SOLARIZE', r'SOLARIZE')
 generator.add('MIRROR', r'MIRROR')
