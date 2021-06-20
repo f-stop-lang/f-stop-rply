@@ -13,6 +13,7 @@ generator.add('INTEGER', r'[+-]?([1-9][0-9]*|0)')
 generator.add('TO', r'TO')
 generator.add('ON', r'ON')
 
+generator.add('DEL', r'DEL')
 generator.add('URL', r'URL')
 generator.add('TELL', r'TELL')
 generator.add('LENGTH', r'LENGTH')

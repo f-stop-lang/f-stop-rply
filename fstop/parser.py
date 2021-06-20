@@ -153,6 +153,10 @@ def sequence(p: list) -> list:
 def color_st(p: list) -> Union[tuple, int]:
     return p[-1]
 
+@parser.production('string : string ADD string')
+def str_concat(p: list) -> str:
+    return p[0] + p[-1]
+
 @parser.production('ntuple : ntuple ADD ntuple')
 def tuple_concat(p: list) -> tuple:
     return p[0] + p[-1]
@@ -162,6 +166,12 @@ def seq_concat(p: list) -> list:
     return p[0] + p[-1]
 
 # operation productions
+
+
+@parser.production('expr : DEL variable')
+def del_st(p: list) -> None:
+    img = get_var(p[1], (list, ImageRepr))
+    del img; del parser.env[p[1]]
 
 @parser.production('expr : APPEND variable TO variable')
 def append_seq(p: list) -> None:
