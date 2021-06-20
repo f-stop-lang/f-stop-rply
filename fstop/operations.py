@@ -192,17 +192,32 @@ def draw_dot(p: list) -> ImageDraw.Draw:
     fill = p[-1] if len(p) == 4 else None
     return draw(p[1], 'point', xy=p[2], fill=fill)
 
+
 @parser.production('expr : ARC variable ntuple number COMMA number')
 @parser.production('expr : ARC variable ntuple number COMMA number color')
 def draw_arc(p: list) -> ImageDraw.Draw:
     fill = p[-1] if len(p) == 7 else None
     return draw(p[1], 'arc', xy=p[2], start=p[3], end=p[5], fill=fill)
 
+@parser.production('expr : ARC variable ntuple number COMMA number number')
+@parser.production('expr : ARC variable ntuple number COMMA number color number')
+def draw_arc_w(p: list) -> ImageDraw.Draw:
+    fill = p[-2] if len(p) == 8 else None
+    return draw(p[1], 'arc', xy=p[2], start=p[3], end=p[5], fill=fill, width=p[-1])
+
+
 @parser.production('expr : CHORD variable ntuple number COMMA number')
 @parser.production('expr : CHORD variable ntuple number COMMA number color')
 def draw_chord(p: list) -> ImageDraw.Draw:
     fill = p[-1] if len(p) == 7 else None
     return draw(p[1], 'chord', xy=p[2], start=p[3], end=p[5], fill=fill)
+
+@parser.production('expr : CHORD variable ntuple number COMMA number number')
+@parser.production('expr : CHORD variable ntuple number COMMA number color number')
+def draw_chord_w(p: list) -> ImageDraw.Draw:
+    fill = p[-2] if len(p) == 8 else None
+    return draw(p[1], 'chord', xy=p[2], start=p[3], end=p[5], fill=fill, width=p[-1])
+    
 
 @parser.production('expr : POLYGON variable ntuple')
 @parser.production('expr : POLYGON variable ntuple color')
