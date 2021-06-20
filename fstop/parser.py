@@ -58,16 +58,26 @@ def string(p: list) -> str:
 @parser.production('number : FLOAT')
 @parser.production('number : WIDTH variable')
 @parser.production('number : HEIGHT variable')
+@parser.production('number : LENGTH variable')
+@parser.production('number : TELL variable')
 def number(p: list) -> float:
+    token = p[0].gettokentype()
     if len(p) == 1:
         string = p[0].getstr()
         return (
-            float(string) if p[0].gettokentype() == "FLOAT" else int(string)
+            float(string) if token == "FLOAT" else int(string)
+        )
+    elif len(p) == 2 and token == "LENGTH":
+        img = get_var(p[1], (ImageRepr, list))
+        return (
+            len(img) if isinstance(img, list) else getattr(img, 'n_frames', 1)
         )
     else:
         img = get_var(p[1])
         return (
-            img.image.width if p[0].gettokentype() == "WIDTH" else img.image.height
+            img.image.width if token == "WIDTH" else 
+            img.image.height if token == "HEIGHT" else 
+            img.image.tell() if token == "TELL" else 0
         )
 
 @parser.production('number : number ADD number')

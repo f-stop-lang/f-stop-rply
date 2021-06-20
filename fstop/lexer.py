@@ -14,6 +14,8 @@ generator.add('TO', r'TO')
 generator.add('ON', r'ON')
 
 generator.add('URL', r'URL')
+generator.add('TELL', r'TELL')
+generator.add('LENGTH', r'LENGTH')
 generator.add('ECHO', r'ECHO')
 generator.add('APPEND', r'APPEND')
 generator.add('STREAM', r'STREAM')
