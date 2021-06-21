@@ -150,7 +150,8 @@ def sequence(p: list) -> list:
 
 @parser.production('color : COLOR ntuple')
 @parser.production('color : COLOR number')
-def color_st(p: list) -> Union[tuple, int]:
+@parser.production('color : COLOR string')
+def color_st(p: list) -> Union[tuple, int, str]:
     return p[-1]
 
 @parser.production('string : string ADD string')
