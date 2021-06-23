@@ -7,10 +7,17 @@ from PIL import Image
 from .parser import parser, get_var
 from .objects import ImageRepr
 
+def _fromarray(arr: np.ndarray) -> Image.Image:
+    return Image.fromarray(
+        cv.cvtColor(
+            arr, cv.COLOR_BGR2RGB
+        )
+    )
+
 def cv_process(img: str, operation: Callable, *args, **kwargs) -> np.ndarray:
     img = get_var(img)
     img.array = arr = operation(img.array, *args, **kwargs)
-    img.image = Image.fromarray(arr)
+    img.image = _fromarray(arr)
     return arr
 
 @parser.production('expr : CANNY variable number COMMA number')
@@ -46,7 +53,7 @@ def apply_color_map(p: list) -> np.ndarray:
 def inrange_st(p: list) -> ImageRepr:
     img = get_var(p[0])
     arr = cv.inRange(img.array, p[2], p[4])
-    img = ImageRepr(Image.fromarray(arr))
+    img = ImageRepr(_fromarray(arr))
     parser.env[p[-1]] = img
     return img
 
@@ -54,7 +61,7 @@ def inrange_st(p: list) -> ImageRepr:
 def bitwise_and(p: list) -> ImageRepr:
     img, img2 = get_var(p[0]), get_var(p[2])
     arr = cv.bitwise_and(img.array, img2.array)
-    img = ImageRepr(Image.fromarray(arr))
+    img = ImageRepr(_fromarray(arr))
     parser.env[p[-1]] = img
     return img
 
@@ -62,7 +69,7 @@ def bitwise_and(p: list) -> ImageRepr:
 def bitwise_or(p: list) -> ImageRepr:
     img, img2 = get_var(p[0]), get_var(p[2])
     arr = cv.bitwise_or(img.array, img2.array)
-    img = ImageRepr(Image.fromarray(arr))
+    img = ImageRepr(_fromarray(arr))
     parser.env[p[-1]] = img
     return img
 
@@ -70,6 +77,6 @@ def bitwise_or(p: list) -> ImageRepr:
 def bitwise_xor(p: list) -> ImageRepr:
     img, img2 = get_var(p[0]), get_var(p[2])
     arr = cv.bitwise_xor(img.array, img2.array)
-    img = ImageRepr(Image.fromarray(arr))
+    img = ImageRepr(_fromarray(arr))
     parser.env[p[-1]] = img
     return img
