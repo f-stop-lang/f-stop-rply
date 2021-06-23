@@ -12,6 +12,10 @@ generator.add('INTEGER', r'[+-]?([1-9][0-9]*|0)')
 
 generator.add('TO', r'TO')
 generator.add('ON', r'ON')
+generator.add('NOT', r'NOT')
+generator.add('AND', r'AND')
+generator.add('OR', r'OR')
+generator.add('XOR', r'XOR')
 
 generator.add('DEL', r'DEL')
 generator.add('URL', r'URL')
@@ -22,6 +26,12 @@ generator.add('APPEND', r'APPEND')
 generator.add('STREAM', r'STREAM')
 generator.add('LOOP', r'LOOP')
 generator.add('DURATION', r'DURATION')
+
+generator.add('CANNY', r'CANNY')
+generator.add('CVTCOLOR', r'CVTCOLOR')
+generator.add('INRANGE', r'INRANGE')
+generator.add('THRESHOLD', r'THRESHOLD')
+generator.add('COLORMAP', r'COLORMAP')
 
 generator.add('OPEN', r'OPEN')
 generator.add('AS', r'AS')

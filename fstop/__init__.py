@@ -3,3 +3,4 @@ from .parser import parser
 from .objects import ImageRepr
 
 from . import operations
+from . import cv
