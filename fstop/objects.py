@@ -12,7 +12,7 @@ class ImageRepr(BaseBox):
 
     def __getattribute__(self, attr: str):
         if attr == 'array':
-            self.array = np.asarray(self.image)
-            return self.array
+            self.array = arr = np.asarray(self.image)
+            return arr
         else:
             return super().__getattribute__(attr)
