@@ -9,9 +9,9 @@ from .objects import ImageRepr
 
 def cv_process(img: str, operation: Callable, *args, **kwargs) -> np.ndarray:
     img = get_var(img)
-    img.array = operation(img.array, *args, **kwargs)
-    img.image = Image.fromarray(img.array)
-    return img.array
+    img.array = arr = operation(img.array, *args, **kwargs)
+    img.image = Image.fromarray(arr)
+    return arr
 
 @parser.production('expr : CANNY variable number COMMA number')
 def canny_st(p: list) -> np.ndarray:
