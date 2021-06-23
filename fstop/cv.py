@@ -25,7 +25,7 @@ def colorspace_convert(p: list) -> np.ndarray:
 def bitwise_not(p: list) -> np.ndarray:
     return cv_process(p[1], cv.bitwise_not)
 
-@parser.production('expr : THRESHOLD img number COMMA number string')
+@parser.production('expr : THRESHOLD variable number COMMA number string')
 def threshold_st(p: list) -> np.ndarray:
     return cv_process(p[1], cv.threshold, p[2], p[4], getattr(cv, p[5].upper()))
 
