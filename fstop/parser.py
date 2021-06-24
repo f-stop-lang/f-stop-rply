@@ -380,3 +380,14 @@ def echo_var(p: list) -> Union[ImageRepr, list]:
     var = get_var(p[1])
     print(var)
     return var
+
+@parser.error
+def error_handler(token: Token):
+    options = {
+        'token': token.gettokentype(), 
+        'pos': token.getsourcepos(),
+        'val': token.getstr(),
+    }
+    raise SyntaxError(
+        "Unexpected {token} in {pos}\nvalue : '{val}'".format(**options)
+    )
