@@ -16,7 +16,10 @@ def _fromarray(arr: np.ndarray) -> Image.Image:
 
 def cv_process(img: str, operation: Callable, *args, **kwargs) -> np.ndarray:
     img = get_var(img)
-    img.array = arr = operation(img.array, *args, **kwargs)
+    arr = operation(img.array, *args, **kwargs)
+    if isinstance(arr, tuple):
+        arr = arr[-1]
+    img.array = arr
     img.image = _fromarray(arr)
     return arr
 
