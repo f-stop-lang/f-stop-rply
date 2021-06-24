@@ -37,10 +37,7 @@ def bitwise_not(p: list) -> np.ndarray:
 
 @parser.production('expr : THRESHOLD variable number COMMA number string')
 def threshold_st(p: list) -> np.ndarray:
-    mapping = getattr(cv, 
-        (p[5] if p[5].startswith('THRESHOLD_') else 'THRESHOLD_' + p[5]).upper()
-    )
-    return cv_process(p[1], cv.threshold, p[2], p[4], mapping)
+    return cv_process(p[1], cv.threshold, p[2], p[4], getattr(cv, p[5].upper()))
 
 @parser.production('expr : COLORMAP variable string')
 def apply_color_map(p: list) -> np.ndarray:
