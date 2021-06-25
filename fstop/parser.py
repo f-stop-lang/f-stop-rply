@@ -357,7 +357,7 @@ def spread_st(p: list) -> None:
 @parser.production('expr : PUTALPHA variable ON variable')
 def putalpha_st(p: list) -> None:
     img2, img = get_var(p[1]), get_var(p[3])
-    img.image = img.image.putalpha(img2.image)
+    img.image.putalpha(img2.image)
     return None
 
 @parser.production('expr : REDUCE variable number')
