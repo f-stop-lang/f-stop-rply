@@ -1,6 +1,7 @@
 
 from typing import Callable
 
+from PIL import Image as Module
 from PIL import ImageOps, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 from PIL.Image import Image
 
@@ -217,7 +218,7 @@ def draw_chord(p: list) -> ImageDraw.Draw:
 def draw_chord_w(p: list) -> ImageDraw.Draw:
     fill = p[-2] if len(p) == 8 else None
     return draw(p[1], 'chord', xy=p[2], start=p[3], end=p[5], fill=fill, width=p[-1])
-    
+
 
 @parser.production('expr : POLYGON variable ntuple')
 @parser.production('expr : POLYGON variable ntuple color')
@@ -262,3 +263,12 @@ def contrast(p: list) -> ImageEnhance.Contrast:
 @parser.production('expr : COLORIZE variable number')
 def brighten(p: list) -> ImageEnhance.Color:
     return enhance(p, 'Color')
+
+# ImageTransform operations
+
+@parser.production('expr : DISTORT variable ntuple string ntuple')
+@parser.production('expr : DISTORT variable ntuple string ntuple color')
+def transform(p: list) -> int:
+    img = get_var(p[1])
+    fill = p[-1] if len(p) == 6 else None
+    img.image = img.image.transform(p[2], method=getattr(Module, p[3].upper()), data=p[4], fillcolor=fill)
