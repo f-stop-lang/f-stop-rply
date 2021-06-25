@@ -229,7 +229,7 @@ def open_statement(p: list) -> Optional[ImageRepr]:
         try:
             payload = request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             with request.urlopen(payload) as resp:
-                filename = resp.read()
+                filename = BytesIO(resp.read())
         except url_error.HTTPError as exc:
             raise RuntimeError('Could not fetch the image properly; status-code: %s' % exc.getcode())
             
