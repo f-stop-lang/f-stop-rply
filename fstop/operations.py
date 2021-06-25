@@ -10,9 +10,8 @@ from .objects import ImageRepr
 
 def operation(p: list, operation: Callable, *args, **kwargs) -> None:
     image = get_var(p[1])
-    mode = 'RGB' if operation.__module__ == 'PIL.ImageOps' else 'RGBA'
     image.image = operation(
-        image.image.convert(mode),
+        image.image,
         *args, **kwargs
     )
     return None
