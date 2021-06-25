@@ -1,7 +1,9 @@
 from typing import Optional, Union, Any
 from io import BytesIO
 
-import requests
+from urllib import error as url_error
+from urllib import request
+
 from PIL import ImageSequence, Image
 from rply import ParserGenerator, Token
 
@@ -224,8 +226,12 @@ def open_statement(p: list) -> Optional[ImageRepr]:
         filename = parser._stream_env[index]
     elif p[1].gettokentype() == "URL":
         url, name = p[2], p[-1]
-        with requests.get(url) as resp:
-            filename = BytesIO(resp.content)
+        try:
+            payload = request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with request.urlopen(payload) as resp:
+                filename = resp.read()
+        except url_error.HTTPError as exc:
+            raise RuntimeError('Could not fetch the image properly; status-code: %s' % exc.getcode())
             
     image = Image.open(filename)
     image = ImageRepr(image)
