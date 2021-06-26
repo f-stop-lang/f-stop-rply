@@ -20,7 +20,7 @@ class Runner:
 
         self._parsergen._stream_env = streams
         tokens = self.lexer.lex(code)
-        result = self.parser.parse(tokens)
+        result = [f() for f in self.parser.parse(tokens)]
         self.streams = self._parsergen._saved_streams
         return result
 

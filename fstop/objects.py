@@ -23,3 +23,10 @@ class ImageRepr(BaseBox):
             return arr
         else:
             return super().__getattribute__(attr)
+
+def evaluate(fn):
+    def wrapper(p):
+        def inner():
+            return fn(p)
+        return inner
+    return wrapper
