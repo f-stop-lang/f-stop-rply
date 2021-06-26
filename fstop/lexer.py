@@ -33,6 +33,7 @@ generator.add('INRANGE', r'INRANGE')
 generator.add('THRESHOLD', r'THRESHOLD')
 generator.add('COLORMAP', r'COLORMAP')
 
+generator.add('ITER', r'ITER')
 generator.add('OPEN', r'OPEN')
 generator.add('AS', r'AS')
 generator.add('SAVE', r'SAVE')

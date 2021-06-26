@@ -23,39 +23,45 @@ def cv_process(img: str, operation: Callable, *args, **kwargs) -> np.ndarray:
     img.image = _fromarray(arr)
     return arr
 
-@evaluate
+ 
 @parser.production('expr : CANNY variable number COMMA number')
+@evaluate
 def canny_st(p: list) -> np.ndarray:
     return cv_process(p[1], cv.Canny, p[2], p[4])
 
-@evaluate
+ 
 @parser.production('expr : CVTCOLOR variable string')
+@evaluate
 def colorspace_convert(p: list) -> np.ndarray:
     mapping = getattr(cv, 
         (p[2] if p[2].startswith('COLOR_') else 'COLOR_' + p[2]).upper()
     )
     return cv_process(p[1], cv.cvtColor, mapping)
 
-@evaluate
+ 
 @parser.production('expr : NOT variable')
+@evaluate
 def bitwise_not(p: list) -> np.ndarray:
     return cv_process(p[1], cv.bitwise_not)
 
-@evaluate
+ 
 @parser.production('expr : THRESHOLD variable number COMMA number string')
+@evaluate
 def threshold_st(p: list) -> np.ndarray:
     return cv_process(p[1], cv.threshold, p[2], p[4], getattr(cv, p[5].upper()))
 
-@evaluate
+ 
 @parser.production('expr : COLORMAP variable string')
+@evaluate
 def apply_color_map(p: list) -> np.ndarray:
     mapping = getattr(cv, 
         (p[2] if p[2].startswith('COLORMAP_') else 'COLORMAP_' + p[2]).upper()
     )
     return cv_process(p[1], cv.applyColorMap, mapping)
 
-@evaluate
+ 
 @parser.production('expr : variable INRANGE ntuple COMMA ntuple AS variable')
+@evaluate
 def inrange_st(p: list) -> ImageRepr:
     img = get_var(p[0])
     arr = cv.inRange(img.array, p[2], p[4])
@@ -63,8 +69,9 @@ def inrange_st(p: list) -> ImageRepr:
     parser.env[p[-1]] = img
     return img
 
-@evaluate
+ 
 @parser.production('expr : variable AND variable AS variable')
+@evaluate
 def bitwise_and(p: list) -> ImageRepr:
     img, img2 = get_var(p[0]), get_var(p[2])
     arr = cv.bitwise_and(img.array, img2.array)
@@ -72,8 +79,9 @@ def bitwise_and(p: list) -> ImageRepr:
     parser.env[p[-1]] = img
     return img
 
-@evaluate
+ 
 @parser.production('expr : variable OR variable AS variable')
+@evaluate
 def bitwise_or(p: list) -> ImageRepr:
     img, img2 = get_var(p[0]), get_var(p[2])
     arr = cv.bitwise_or(img.array, img2.array)
@@ -81,8 +89,9 @@ def bitwise_or(p: list) -> ImageRepr:
     parser.env[p[-1]] = img
     return img
 
-@evaluate
+ 
 @parser.production('expr : variable XOR variable AS variable')
+@evaluate
 def bitwise_xor(p: list) -> ImageRepr:
     img, img2 = get_var(p[0]), get_var(p[2])
     arr = cv.bitwise_xor(img.array, img2.array)

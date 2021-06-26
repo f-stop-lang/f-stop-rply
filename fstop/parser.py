@@ -171,21 +171,24 @@ def seq_concat(p: list) -> list:
 # operation productions
 
 
-@evaluate
+ 
 @parser.production('expr : DEL variable')
+@evaluate
 def del_st(p: list) -> None:
     img = get_var(p[1], (list, ImageRepr))
     del img; del parser.env[p[1]]
 
-@evaluate
+ 
 @parser.production('expr : APPEND variable TO variable')
+@evaluate
 def append_seq(p: list) -> None:
     img = get_var(p[1])
     seq = get_var(p[-1], list)
     return seq.append(img.image)
 
-@evaluate
+ 
 @parser.production('expr : BLEND variable COMMA variable ALPHA number AS variable')
+@evaluate
 def blend(p: list) -> Image:
     backg, overlay, alpha, name = p[1], p[3], p[-3], p[-1]
     img1, img2 = get_var(backg), get_var(overlay)
@@ -194,10 +197,11 @@ def blend(p: list) -> Image:
     parser.env[name] = image
     return image
 
-@evaluate
+ 
 @parser.production('expr : NEW sequence AS variable')
 @parser.production('expr : NEW string ntuple AS variable')
 @parser.production('expr : NEW string ntuple color AS variable')
+@evaluate
 def new_statement(p: list) -> Optional[ImageRepr]:
 
     if len(p) == 4:
@@ -210,8 +214,9 @@ def new_statement(p: list) -> Optional[ImageRepr]:
         parser.env[name] = image
         return image
 
-@evaluate
+ 
 @parser.production('expr : MERGE string sequence AS variable')
+@evaluate
 def merge_statement(p: list) -> Optional[ImageRepr]:
     mode, bands, name = p[1], p[2], p[4]
     image = Image.merge(mode, tuple(bands))
@@ -219,10 +224,11 @@ def merge_statement(p: list) -> Optional[ImageRepr]:
     parser.env[name] = image
     return image
 
-@evaluate
+ 
 @parser.production('expr : OPEN string AS variable')
 @parser.production('expr : OPEN STREAM number AS variable')
 @parser.production('expr : OPEN URL string AS variable')
+@evaluate
 def open_statement(p: list) -> Optional[ImageRepr]:
 
     if len(p) == 4:
@@ -244,8 +250,9 @@ def open_statement(p: list) -> Optional[ImageRepr]:
     parser.env[name] = image
     return image
 
-@evaluate
+ 
 @parser.production('expr : CLONE variable AS variable')
+@evaluate
 def clone_statement(p: list) -> None:
     img = get_var(p[1])
     name = p[-1]
@@ -254,14 +261,15 @@ def clone_statement(p: list) -> None:
     parser.env[name] = image 
     return image
 
-@evaluate
+ 
 @parser.production('expr : CONVERT variable string')
+@evaluate
 def convert_statement(p: list) -> None:
     img = get_var(p[1])
     img.image = img.image.convert(p[-1])
     return None
 
-@evaluate
+ 
 @parser.production('expr : SAVE variable string')
 @parser.production('expr : SAVE variable STREAM string')
 @parser.production('expr : SAVE variable string LOOP number')
@@ -270,6 +278,7 @@ def convert_statement(p: list) -> None:
 @parser.production('expr : SAVE variable STREAM string LOOP number')
 @parser.production('expr : SAVE variable STREAM string DURATION number')
 @parser.production('expr : SAVE variable STREAM string DURATION number LOOP number')
+@evaluate
 def save_statement(p: list) -> Union[str, BytesIO]:
     img = get_var(p[1], (ImageRepr, list))
     if isinstance(img, list):
@@ -305,31 +314,35 @@ def save_statement(p: list) -> Union[str, BytesIO]:
         parser._saved_streams.append(buffer)
         return buffer
 
-@evaluate
+ 
 @parser.production('expr : CLOSE variable')
+@evaluate
 def close_statement(p: list) -> None:
     img = get_var(p[1])
     img.image.close()
     return None
 
-@evaluate
+ 
 @parser.production('expr : RESIZE variable ntuple')
+@evaluate
 def resize_statement(p: list) -> tuple:
     img = get_var(p[1])
     img.image = img.image.resize(p[-1])
     return p[-1]
 
-@evaluate
+ 
 @parser.production('expr : ROTATE variable number')
+@evaluate
 def rotate_statement(p: list) -> float:
     img = get_var(p[1])
     img.image = img.image.rotate(p[-1])
     return p[-1]
 
-@evaluate
+ 
 @parser.production('expr : PASTE variable ON variable')
 @parser.production('expr : PASTE variable ON variable ntuple')
 @parser.production('expr : PASTE variable ON variable MASK variable ntuple')
+@evaluate
 def paste_statement(p: list) -> None:
     image, snippet = p[1], p[3]
     img1, img2 = get_var(image), get_var(snippet)
@@ -338,72 +351,81 @@ def paste_statement(p: list) -> None:
     img2.image.paste(img1.image, xy, mask=mask)
     return None
 
-@evaluate
+ 
 @parser.production('expr : PUTPIXEL variable ntuple color')
+@evaluate
 def putpixel(p: list) -> tuple:
     coords, color = p[2], p[-1]
     img = get_var(p[1])
     img.image.putpixel(coords, color)
     return coords
 
-@evaluate 
+  
 @parser.production('expr : SHOW variable')
 @parser.production('expr : SHOW variable string')
+@evaluate
 def show_statement(p: list) -> Optional[str]:
     img = get_var(p[1])
     title = p[-1] if len(p) == 3 else None
     img.image.show(title=title)
     return title
 
-@evaluate
+ 
 @parser.production('expr : CROP variable')
 @parser.production('expr : CROP variable ntuple')
+@evaluate
 def crop_statement(p: list) -> None:
     img = get_var(p[1])
     box = p[-1] if len(p) == 3 else None
     img.image = img.image.crop(box=box)
     return None
 
-@evaluate
+ 
 @parser.production('expr : SPREAD variable number')
+@evaluate
 def spread_st(p: list) -> None:
     img = get_var(p[1])
     img.image = img.image.effect_spread(p[-1])
     return None
 
-@evaluate
+ 
 @parser.production('expr : PUTALPHA variable ON variable')
+@evaluate
 def putalpha_st(p: list) -> None:
     img2, img = get_var(p[1]), get_var(p[3])
     img.image.putalpha(img2.image)
     return None
 
-@evaluate
+ 
 @parser.production('expr : REDUCE variable number')
 @parser.production('expr : REDUCE variable number ntuple')
+@evaluate
 def reduce_st(p: list) -> None:
     img = get_var(p[1])
     box = p[-1] if len(p) == 4 else None
     img.image = img.image.reduce(p[2], box=box)
 
-@evaluate
+ 
 @parser.production('expr : SEEK variable number')
+@evaluate
 def seek_st(p: list) -> int:
     img = get_var(p[1])
     img.image.seek(p[2])
     return p[2]
 
-@evaluate
+ 
 @parser.production('expr : ECHO expr')
 @parser.production('expr : ECHO string')
 @parser.production('expr : ECHO number')
 @parser.production('expr : ECHO ntuple')
+@evaluate
 def echo(p: list) -> Any:
     print(p[-1])
     return p[-1]
 
-@evaluate
+ 
 @parser.production('expr : ECHO variable')
+@evaluate
 def echo_var(p: list) -> Union[ImageRepr, list]:
     var = get_var(p[1])
     print(var)
@@ -415,13 +437,37 @@ def echo_var(p: list) -> Union[ImageRepr, list]:
 def for_loop_st(p: list) -> None:
     img = get_var(p[2])
     fr = p[5]
+    new_frames = []
+
     for frame in ImageSequence.Iterator(img.image):
         parser.env[fr] = ImageRepr(frame)
-        _ = [f() for f in p[7]]
+        _ = (f() for f in p[7])
+        curr_frame = get_var(fr)
+        new_frames.append(curr_frame)
+
+    format_ = img.image.format or ('GIF' if img.image.is_animated else 'PNG')
+    info, options = img.image.info, {}
+
+    if (dur := info.get('duration')) is not None:
+        options['duration'] = dur
+    if (loop := info.get('loop')) is not None:
+        options['loop'] = loop
+
+    if len(new_frames) > 1:
+        options['save_all'] = True
+        options['append_images'] = new_frames[1:]
+
+    buf = BytesIO()
+    new_frames[0].save(buf, format_, optimize=True, **options)
+    buf.seek(0)
+
+    parser.env[p[2]] = ImageRepr(Image.open(buf))
+
     try:
         del parser.env[fr]
     except KeyError:
         pass
+
     return None
 
 # error handler
