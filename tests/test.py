@@ -3,6 +3,9 @@ from io import BytesIO
 
 import fstop
 
+import importlib
+importlib.reload(fstop)
+
 class Runner:
 
     def __init__(self) -> None:
@@ -22,7 +25,6 @@ class Runner:
         tokens = self.lexer.lex(code)
         result = [f() for f in self.parser.parse(tokens)]
         self.streams = self._parsergen._saved_streams
-        #print(self._parsergen.env)
         return result
 
     def reset(self) -> Dict:

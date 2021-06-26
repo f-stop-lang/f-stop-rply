@@ -64,7 +64,7 @@ def poster_op(p: list) -> None:
 @evaluate
 def pad_op(p: list) -> None:
     color = p[-1]() if len(p) == 4 else None
-    return operation(p, ImageOps.pad, size=p[2], color=color)
+    return operation(p, ImageOps.pad, size=p[2](), color=color)
 
  
 @parser.production('expr : SCALE variable number')
@@ -72,7 +72,7 @@ def pad_op(p: list) -> None:
 @evaluate
 def scale_op(p: list) -> None:
     resample = p[-1]() if len(p) == 4 else 3
-    return operation(p, ImageOps.scale, factor=p[2], resample=resample)
+    return operation(p, ImageOps.scale, factor=p[2](), resample=resample)
 
  
 @parser.production('expr : EXPAND variable number')
@@ -80,7 +80,7 @@ def scale_op(p: list) -> None:
 @evaluate
 def expand_op(p: list) -> None:
     fill = p[-1]() if len(p) == 4 else 0
-    return operation(p, ImageOps.expand, border=p[2], fill=fill)
+    return operation(p, ImageOps.expand, border=p[2](), fill=fill)
 
  
 @parser.production('expr : EQUALIZE variable')
@@ -96,7 +96,7 @@ def equalize_op(p: list) -> None:
 @evaluate
 def fit_op(p: list) -> None:
     bleed = p[-1]() if len(p) == 4 else 3
-    return operation(p, ImageOps.fit, size=p[2], bleed=bleed)
+    return operation(p, ImageOps.fit, size=p[2](), bleed=bleed)
 
 # filters
 

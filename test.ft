@@ -1,5 +1,4 @@
-// blend 2 images together
-
+/*
 OPEN "./assets/test.png" AS img
 NEW [img,] AS var
 NEW "RGB" (WIDTH img, HEIGHT img + 10 - 10) COLOR (0, 0, 255) AS bg
@@ -21,3 +20,25 @@ ECHO "amogus sus"
 CLOSE img
 CLOSE bg
 CLOSE blended
+
+OPEN './assets/test.png' AS img
+
+ITER (img) AS frame ( CONVERT frame 'RGB' INVERT frame )
+SAVE img 'test.gif'
+*/
+
+OPEN URL 'https://media.discordapp.net/attachments/849851339499503663/858058174326112256/hammer_raised.png' AS ham0
+OPEN URL 'https://media.discordapp.net/attachments/849851339499503663/858058195712999424/hammer_down.png' AS ham1
+OPEN "./assets/test.png" AS av
+NEW [] AS seq
+
+RESIZE av (90, 90)
+PASTE av ON ham0 (85, 85)
+RESIZE av (90, 50)
+PASTE av ON ham1 (85, 125)
+
+RESIZE ham1 SIZE ham0
+APPEND ham0 TO seq
+APPEND ham1 TO seq
+
+SAVE seq 'test.gif' DURATION 170 LOOP 0

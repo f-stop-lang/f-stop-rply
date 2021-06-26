@@ -39,11 +39,11 @@ def program(p: list) -> list:
 
 @parser.production("statements : statements expr")
 def statements(p: list) -> list:
-    return chain(p[0], [p[1]])
+    return p[0] + [p[1]]
 
 @parser.production("statements : expr")
 def expr(p: list) -> list:
-    yield p[0]
+    return [p[0]]
 
 # object type productions
 
@@ -73,13 +73,12 @@ def number(p: list) -> float:
             float(string) if token == "FLOAT" else int(string)
         )
     elif len(p) == 2 and token == "LENGTH":
-        v = p[1]()
-        if isinstance(v, list):
-            return len(v)
+        if isinstance(p[1], list):
+            return len(p[1])
         else:
             img = get_var(p[1], (ImageRepr, list))
             return (
-                len(img) if isinstance(img, list) else getattr(img, 'n_frames', 1)
+                len(img) if isinstance(img, list) else getattr(img.image, 'n_frames', 1)
             )
     else:
         img = get_var(p[1])
@@ -153,7 +152,7 @@ def seq_body(p: list) -> list:
 def sequence(p: list) -> list:
     if isinstance(p[0], Token):
         img = get_var(p[1])
-        return list(ImageSequence.Iterator(img))
+        return list(ImageSequence.Iterator(img.image))
     else:
         seq = p[0] + [p[1]] if len(p) == 3 else p[0]
         return [getattr(get_var(i), 'image', None) for i in seq]
@@ -165,14 +164,17 @@ def color_st(p: list) -> Union[tuple, int, str]:
     return p[-1]
 
 @parser.production('string : string ADD string')
+@evaluate
 def str_concat(p: list) -> str:
-    return p[0] + p[-1]
+    return p[0]() + p[-1]()
 
 @parser.production('ntuple : ntuple ADD ntuple')
+@evaluate
 def tuple_concat(p: list) -> tuple:
-    return p[0] + p[-1]
+    return p[0]() + p[-1]()
 
 @parser.production('sequence : sequence ADD sequence')
+@evaluate
 def seq_concat(p: list) -> list:
     return p[0]() + p[-1]()
 
@@ -242,10 +244,10 @@ def open_statement(p: list) -> Optional[ImageRepr]:
     if len(p) == 4:
         filename, name = p[1], p[-1]
     elif p[1].gettokentype() == "STREAM":
-        index, name = p[2], p[-1]
+        index, name = p[2](), p[-1]
         filename = parser._stream_env[index]
     elif p[1].gettokentype() == "URL":
-        url, name = p[2], p[-1]
+        url, name = p[2](), p[-1]
         try:
             payload = request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             with request.urlopen(payload) as resp:
@@ -297,26 +299,26 @@ def save_statement(p: list) -> Union[str, BytesIO]:
         try:
             i = p.index(Token('DURATION', r'DURATION')) + 1
             j = p.index(Token('LOOP', r'LOOP')) + 1
-            options['duration'], options['loop'] = p[i], p[j]
+            options['duration'], options['loop'] = p[i](), p[j]()
         except (ValueError, TypeError, IndexError):
             pass
     if Token('STREAM', r'STREAM') not in p:
         if isinstance(img, ImageRepr):
-            img.image.save(p[2])
+            img.image.save(p[2]())
         else:
-            img[0].save(p[2], 
+            img[0].save(p[2](), 
                 save_all=True,
                 append_images=img[1:], 
                 optimize=True, **options,
             )
-        return p[2]
+        return p[2]()
     else:
         buffer = BytesIO()
         if isinstance(img, ImageRepr):
-            img.image.save(buffer, p[3])
+            img.image.save(buffer, p[3]())
         else:
             img[0].save(buffer, 
-                p[3],
+                p[3](),
                 save_all=True, 
                 append_images=img[1:],
                 optimize=True, **options,
@@ -377,7 +379,7 @@ def putpixel(p: list) -> tuple:
 @evaluate
 def show_statement(p: list) -> Optional[str]:
     img = get_var(p[1])
-    title = p[-1] if len(p) == 3 else None
+    title = p[-1]() if len(p) == 3 else None
     img.image.show(title=title)
     return title
 
@@ -387,7 +389,7 @@ def show_statement(p: list) -> Optional[str]:
 @evaluate
 def crop_statement(p: list) -> None:
     img = get_var(p[1])
-    box = p[-1] if len(p) == 3 else None
+    box = p[-1]() if len(p) == 3 else None
     img.image = img.image.crop(box=box)
     return None
 
@@ -396,7 +398,7 @@ def crop_statement(p: list) -> None:
 @evaluate
 def spread_st(p: list) -> None:
     img = get_var(p[1])
-    img.image = img.image.effect_spread(p[-1])
+    img.image = img.image.effect_spread(p[-1]())
     return None
 
  
@@ -413,7 +415,7 @@ def putalpha_st(p: list) -> None:
 @evaluate
 def reduce_st(p: list) -> None:
     img = get_var(p[1])
-    box = p[-1] if len(p) == 4 else None
+    box = p[-1]() if len(p) == 4 else None
     img.image = img.image.reduce(p[2], box=box)
 
  
@@ -421,7 +423,7 @@ def reduce_st(p: list) -> None:
 @evaluate
 def seek_st(p: list) -> int:
     img = get_var(p[1])
-    img.image.seek(p[2])
+    img.image.seek(p[2]())
     return p[2]
 
  
@@ -429,6 +431,7 @@ def seek_st(p: list) -> int:
 @parser.production('expr : ECHO string')
 @parser.production('expr : ECHO number')
 @parser.production('expr : ECHO ntuple')
+@parser.production('expr : ECHO sequence')
 @evaluate
 def echo(p: list) -> Any:
     print(p[-1]())
@@ -445,6 +448,7 @@ def echo_var(p: list) -> Union[ImageRepr, list]:
 # iterators
 
 @parser.production('expr : ITER LEFT_PAREN variable RIGHT_PAREN AS variable LEFT_PAREN statements RIGHT_PAREN')
+@evaluate
 def for_loop_st(p: list) -> None:
     img = get_var(p[2])
     fr = p[5]
@@ -452,27 +456,14 @@ def for_loop_st(p: list) -> None:
 
     for frame in ImageSequence.Iterator(img.image):
         parser.env[fr] = ImageRepr(frame)
-        _ = (f() for f in p[7])
+
+        for f in p[-2]:
+            f()
+
         curr_frame = get_var(fr)
-        new_frames.append(curr_frame)
+        new_frames.append(curr_frame.image)
 
-    format_ = img.image.format or ('GIF' if img.image.is_animated else 'PNG')
-    info, options = img.image.info, {}
-
-    if (dur := info.get('duration')) is not None:
-        options['duration'] = dur
-    if (loop := info.get('loop')) is not None:
-        options['loop'] = loop
-
-    if len(new_frames) > 1:
-        options['save_all'] = True
-        options['append_images'] = new_frames[1:]
-
-    buf = BytesIO()
-    new_frames[0].save(buf, format_, optimize=True, **options)
-    buf.seek(0)
-
-    parser.env[p[2]] = ImageRepr(Image.open(buf))
+    parser.env[p[2]] = new_frames
 
     try:
         del parser.env[fr]
