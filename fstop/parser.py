@@ -6,7 +6,7 @@ from urllib import request
 
 from PIL import ImageSequence, Image
 from rply import ParserGenerator, Token
-
+from itertools import chain
 from .lexer import generator
 from .objects import ImageRepr, evaluate
 
@@ -39,16 +39,17 @@ def program(p: list) -> list:
 
 @parser.production("statements : statements expr")
 def statements(p: list) -> list:
-    return p[0] + [p[1]]
+    return chain(p[0], [p[1]])
 
 @parser.production("statements : expr")
 def expr(p: list) -> list:
-    return [p[0]]
+    yield p[0]
 
 # object type productions
 
 @parser.production('string : STRING')
 @parser.production('string : MODE variable')
+@evaluate
 def string(p: list) -> str:
     if len(p) == 1:
         return p[0].getstr().strip("'").strip('"')
@@ -63,6 +64,7 @@ def string(p: list) -> str:
 @parser.production('number : LENGTH variable')
 @parser.production('number : LENGTH sequence')
 @parser.production('number : TELL variable')
+@evaluate
 def number(p: list) -> float:
     token = p[0].gettokentype()
     if len(p) == 1:
@@ -71,8 +73,9 @@ def number(p: list) -> float:
             float(string) if token == "FLOAT" else int(string)
         )
     elif len(p) == 2 and token == "LENGTH":
-        if isinstance(p[1], list):
-            return len(p[1])
+        v = p[1]()
+        if isinstance(v, list):
+            return len(v)
         else:
             img = get_var(p[1], (ImageRepr, list))
             return (
@@ -92,8 +95,9 @@ def number(p: list) -> float:
 @parser.production('number : number DIV number')
 @parser.production('number : number EXP number')
 @parser.production('number : number FLOOR_DIV number')
+@evaluate
 def numerical_operations(p: list) -> float:
-    x, y = p[0], p[2]
+    x, y = p[0](), p[2]()
     token = p[1].gettokentype()
 
     if token == "ADD":
@@ -114,22 +118,25 @@ def variable(p: list) -> str:
     return p[0].getstr()
 
 @parser.production('ntuple_start : LEFT_PAREN number COMMA')
+@evaluate
 def ntuple_start(p: list) -> tuple:
-    return (p[1],)
+    return (p[1](),)
 
 @parser.production('ntuple_start : ntuple_start number COMMA')
+@evaluate
 def ntuple_body(p: list) -> tuple:
-    return p[0] + (p[1],)
+    return p[0]() + (p[1](),)
 
 @parser.production('ntuple : ntuple_start RIGHT_PAREN')
 @parser.production('ntuple : ntuple_start number RIGHT_PAREN')
 @parser.production('ntuple : SIZE variable')
+@evaluate
 def ntuple(p: list) -> tuple:
     if isinstance(p[0], Token):
         img = get_var(p[1])
         return img.image.size
     else:
-        return p[0] + (p[1],) if len(p) == 3 else p[0]
+        return p[0]() + (p[1](),) if len(p) == 3 else p[0]()
 
 @parser.production('sequence_start : LEFT_BR')
 def seq_start(_: list) -> list:
@@ -142,6 +149,7 @@ def seq_body(p: list) -> list:
 @parser.production('sequence : sequence_start RIGHT_BR')
 @parser.production('sequence : sequence_start variable RIGHT_BR')
 @parser.production('sequence : SEQUENCE variable')
+@evaluate
 def sequence(p: list) -> list:
     if isinstance(p[0], Token):
         img = get_var(p[1])
@@ -166,7 +174,7 @@ def tuple_concat(p: list) -> tuple:
 
 @parser.production('sequence : sequence ADD sequence')
 def seq_concat(p: list) -> list:
-    return p[0] + p[-1]
+    return p[0]() + p[-1]()
 
 # operation productions
 
@@ -192,7 +200,7 @@ def append_seq(p: list) -> None:
 def blend(p: list) -> Image:
     backg, overlay, alpha, name = p[1], p[3], p[-3], p[-1]
     img1, img2 = get_var(backg), get_var(overlay)
-    image = Image.blend(img1.image, img2.image, alpha=alpha)
+    image = Image.blend(img1.image, img2.image, alpha=alpha())
     image = ImageRepr(image)
     parser.env[name] = image
     return image
@@ -205,10 +213,10 @@ def blend(p: list) -> Image:
 def new_statement(p: list) -> Optional[ImageRepr]:
 
     if len(p) == 4:
-        parser.env[p[-1]] = p[1]
+        parser.env[p[-1]] = p[1]()
     else:
-        mode, size, name = p[1], p[2], p[-1]
-        color = p[3] if len(p) == 6 else 0
+        mode, size, name = p[1](), p[2](), p[-1]
+        color = p[3]() if len(p) == 6 else 0
         image = Image.new(mode, size, color)
         image = ImageRepr(image)
         parser.env[name] = image
@@ -218,7 +226,7 @@ def new_statement(p: list) -> Optional[ImageRepr]:
 @parser.production('expr : MERGE string sequence AS variable')
 @evaluate
 def merge_statement(p: list) -> Optional[ImageRepr]:
-    mode, bands, name = p[1], p[2], p[4]
+    mode, bands, name = p[1], p[2](), p[4]
     image = Image.merge(mode, tuple(bands))
     image = ImageRepr(image)
     parser.env[name] = image
@@ -244,8 +252,11 @@ def open_statement(p: list) -> Optional[ImageRepr]:
                 filename = BytesIO(resp.read())
         except url_error.HTTPError as exc:
             raise RuntimeError('Could not fetch the image properly; status-code: %s' % exc.getcode())
-            
-    image = Image.open(filename)
+    try:
+        image = Image.open(filename)
+    except AttributeError:
+        image = Image.open(filename())
+
     image = ImageRepr(image)
     parser.env[name] = image
     return image
@@ -266,7 +277,7 @@ def clone_statement(p: list) -> None:
 @evaluate
 def convert_statement(p: list) -> None:
     img = get_var(p[1])
-    img.image = img.image.convert(p[-1])
+    img.image = img.image.convert(p[-1]())
     return None
 
  
@@ -327,7 +338,7 @@ def close_statement(p: list) -> None:
 @evaluate
 def resize_statement(p: list) -> tuple:
     img = get_var(p[1])
-    img.image = img.image.resize(p[-1])
+    img.image = img.image.resize(p[-1]())
     return p[-1]
 
  
@@ -335,7 +346,7 @@ def resize_statement(p: list) -> tuple:
 @evaluate
 def rotate_statement(p: list) -> float:
     img = get_var(p[1])
-    img.image = img.image.rotate(p[-1])
+    img.image = img.image.rotate(p[-1]())
     return p[-1]
 
  
@@ -346,8 +357,8 @@ def rotate_statement(p: list) -> float:
 def paste_statement(p: list) -> None:
     image, snippet = p[1], p[3]
     img1, img2 = get_var(image), get_var(snippet)
-    xy = (0, 0) if len(p) == 4 else p[-1]
-    mask = p[-2] if len(p) == 7 else None
+    xy = (0, 0) if len(p) == 4 else p[-1]()
+    mask = get_var(p[-2]) if len(p) == 7 else None
     img2.image.paste(img1.image, xy, mask=mask)
     return None
 
@@ -355,7 +366,7 @@ def paste_statement(p: list) -> None:
 @parser.production('expr : PUTPIXEL variable ntuple color')
 @evaluate
 def putpixel(p: list) -> tuple:
-    coords, color = p[2], p[-1]
+    coords, color = p[2](), p[-1]()
     img = get_var(p[1])
     img.image.putpixel(coords, color)
     return coords
@@ -420,7 +431,7 @@ def seek_st(p: list) -> int:
 @parser.production('expr : ECHO ntuple')
 @evaluate
 def echo(p: list) -> Any:
-    print(p[-1])
+    print(p[-1]())
     return p[-1]
 
  
