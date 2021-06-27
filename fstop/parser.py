@@ -195,10 +195,14 @@ def tuple_concat(p: list) -> tuple:
 def seq_concat(p: list) -> list:
     return p[0]() + p[-1]()
 
+@parser.production('range : RANGE LEFT_PAREN number RIGHT_PAREN')
 @parser.production('range : RANGE ntuple')
 @evaluate
 def range_(p: list) -> range:
-    return range(*p[1])
+    if len(p) == 4:
+        return range(p[2]())
+    else:
+        return range(*p[1]())
 
 # operation productions
 
@@ -456,14 +460,12 @@ def seek_st(p: list) -> int:
  
 @parser.production('expr : ECHO expr')
 @parser.production('expr : ECHO string')
-@parser.production('expr : ECHO number')
 @parser.production('expr : ECHO ntuple')
 @parser.production('expr : ECHO sequence')
 @evaluate
 def echo(p: list) -> Any:
     print(p[-1]())
-    return p[-1]
-
+    return p[-1]()
  
 @parser.production('expr : ECHO variable')
 @evaluate
@@ -471,6 +473,12 @@ def echo_var(p: list) -> Union[ImageRepr, list]:
     var = get_var(p[1], object)
     print(var)
     return var
+
+@parser.production('expr : ECHO number')
+@evaluate
+def echo_num(p: list) -> float:
+    print(p[-1]())
+    return p[-1]()
 
 # iterators
 
