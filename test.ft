@@ -25,7 +25,7 @@ OPEN './assets/test.png' AS img
 
 ITER (img) AS frame ( CONVERT frame 'RGB' INVERT frame )
 SAVE img 'test.gif'
-*/
+
 
 OPEN URL 'https://media.discordapp.net/attachments/849851339499503663/858058174326112256/hammer_raised.png' AS ham0
 OPEN URL 'https://media.discordapp.net/attachments/849851339499503663/858058195712999424/hammer_down.png' AS ham1
@@ -42,3 +42,6 @@ APPEND ham0 TO seq
 APPEND ham1 TO seq
 
 SAVE seq 'test.gif' DURATION 170 LOOP 0
+*/
+
+ITER ((1, 2) AS i) -> (ECHO i)

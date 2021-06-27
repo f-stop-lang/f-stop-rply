@@ -122,6 +122,11 @@ def numerical_operations(p: list) -> float:
         return x ** y
     else:
         return x // y
+
+@parser.production('number : variable')
+@evaluate
+def num_var(p: list) -> float:
+    return get_var(p[0], (int, float))
     
 @parser.production('variable : VARIABLE')
 def variable(p: list) -> str:
@@ -463,7 +468,7 @@ def echo(p: list) -> Any:
 @parser.production('expr : ECHO variable')
 @evaluate
 def echo_var(p: list) -> Union[ImageRepr, list]:
-    var = get_var(p[1])
+    var = get_var(p[1], object)
     print(var)
     return var
 
@@ -499,9 +504,8 @@ def seq_iterator(p: list) -> None:
 @parser.production('expr : ITER LEFT_PAREN sequence AS variable RIGHT_PAREN ARROW LEFT_PAREN statements RIGHT_PAREN')
 @evaluate
 def for_loop_st(p: list) -> None:
-    var, iterable = p[4], p[2]
-
-    for i in iterable():
+    var, iterable = p[4], p[2]()
+    for i in iterable:
         parser.env[var] = i
         for f in p[-2]:
             f()
