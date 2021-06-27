@@ -496,11 +496,12 @@ def seq_iterator(p: list) -> None:
 
 @parser.production('expr : ITER LEFT_PAREN ntuple AS variable RIGHT_PAREN ARROW LEFT_PAREN statements RIGHT_PAREN')
 @parser.production('expr : ITER LEFT_PAREN range AS variable RIGHT_PAREN ARROW LEFT_PAREN statements RIGHT_PAREN')
+@parser.production('expr : ITER LEFT_PAREN sequence AS variable RIGHT_PAREN ARROW LEFT_PAREN statements RIGHT_PAREN')
 @evaluate
 def for_loop_st(p: list) -> None:
     var, iterable = p[4], p[2]
 
-    for i in iterable:
+    for i in iterable():
         parser.env[var] = i
         for f in p[-2]:
             f()
