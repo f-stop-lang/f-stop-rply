@@ -513,6 +513,10 @@ def seq_iterator(p: list) -> None:
 @evaluate
 def for_loop_st(p: list) -> None:
     var, iterable = p[4], p[2]()
+    
+    if isinstance(iterable, list):
+        iterable = [ImageRepr(i) for i in iterable]
+        
     for i in iterable:
         parser.env[var] = i
         for f in p[-2]:
