@@ -27,6 +27,7 @@ generator.add('STREAM', r'STREAM')
 generator.add('LOOP', r'LOOP')
 generator.add('DURATION', r'DURATION')
 generator.add('FORMAT', r'FORMAT')
+generator.add('RANGE', r'RANGE')
 
 generator.add('CANNY', r'CANNY')
 generator.add('CVTCOLOR', r'CVTCOLOR')
