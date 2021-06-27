@@ -68,10 +68,11 @@ def pad_op(p: list) -> None:
 
  
 @parser.production('expr : SCALE variable number')
+@parser.production('expr : SCALE variable number string')
 @parser.production('expr : SCALE variable number number')
 @evaluate
 def scale_op(p: list) -> None:
-    resample = p[-1]() if len(p) == 4 else 3
+    resample = getattr(Module, str(p[-1]()), p[-1]()) if len(p) == 4 else 3
     return operation(p, ImageOps.scale, factor=p[2](), resample=resample)
 
  

@@ -26,6 +26,7 @@ generator.add('APPEND', r'APPEND')
 generator.add('STREAM', r'STREAM')
 generator.add('LOOP', r'LOOP')
 generator.add('DURATION', r'DURATION')
+generator.add('FORMAT', r'FORMAT')
 
 generator.add('CANNY', r'CANNY')
 generator.add('CVTCOLOR', r'CVTCOLOR')
@@ -109,6 +110,7 @@ generator.add('COLORIZE', r'COLORIZE')
 
 generator.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
 
+generator.add('ARROW', r'->')
 generator.add('COMMA', r',')
 generator.add('LEFT_PAREN', r'\(')
 generator.add('RIGHT_PAREN', r'\)')

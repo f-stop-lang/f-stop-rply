@@ -6,7 +6,7 @@ from urllib import request
 
 from PIL import ImageSequence, Image
 from rply import ParserGenerator, Token
-from itertools import chain
+
 from .lexer import generator
 from .objects import ImageRepr, evaluate
 
@@ -49,13 +49,20 @@ def expr(p: list) -> list:
 
 @parser.production('string : STRING')
 @parser.production('string : MODE variable')
+@parser.production('string : FORMAT variable')
 @evaluate
 def string(p: list) -> str:
-    if len(p) == 1:
+    token = p[0].gettokentype()
+    if token == 'STRING':
         return p[0].getstr().strip("'").strip('"')
     else:
         img = get_var(p[1])
-        return img.image.mode
+        return (
+            img.image.mode if token == 'MODE' else
+            (img.image.format or (
+                'PNG' if img.image.mode in ('RGBA', 'LA') else 'JPEG'
+            ))
+        )
 
 @parser.production('number : INTEGER')
 @parser.production('number : FLOAT')
@@ -64,6 +71,8 @@ def string(p: list) -> str:
 @parser.production('number : LENGTH variable')
 @parser.production('number : LENGTH sequence')
 @parser.production('number : TELL variable')
+@parser.production('number : DURATION variable')
+@parser.production('number : LOOP variable')
 @evaluate
 def number(p: list) -> float:
     token = p[0].gettokentype()
@@ -85,7 +94,9 @@ def number(p: list) -> float:
         return (
             img.image.width if token == "WIDTH" else 
             img.image.height if token == "HEIGHT" else 
-            img.image.tell() if token == "TELL" else 0
+            img.image.tell() if token == "TELL" else 
+            img.image.info.get('duration', 0) if token == "DURATION" else
+            img.image.info.get('loop', 0) if token == "LOOP" else 0
         )
 
 @parser.production('number : number ADD number')
@@ -160,8 +171,9 @@ def sequence(p: list) -> list:
 @parser.production('color : COLOR ntuple')
 @parser.production('color : COLOR number')
 @parser.production('color : COLOR string')
+@evaluate
 def color_st(p: list) -> Union[tuple, int, str]:
-    return p[-1]
+    return p[-1]()
 
 @parser.production('string : string ADD string')
 @evaluate
@@ -178,10 +190,14 @@ def tuple_concat(p: list) -> tuple:
 def seq_concat(p: list) -> list:
     return p[0]() + p[-1]()
 
+@parser.production('range : RANGE ntuple')
+@evaluate
+def range_(p: list) -> range:
+    return range(*p[1])
+
 # operation productions
 
 
- 
 @parser.production('expr : DEL variable')
 @evaluate
 def del_st(p: list) -> None:
@@ -228,7 +244,7 @@ def new_statement(p: list) -> Optional[ImageRepr]:
 @parser.production('expr : MERGE string sequence AS variable')
 @evaluate
 def merge_statement(p: list) -> Optional[ImageRepr]:
-    mode, bands, name = p[1], p[2](), p[4]
+    mode, bands, name = p[1](), p[2](), p[4]
     image = Image.merge(mode, tuple(bands))
     image = ImageRepr(image)
     parser.env[name] = image
@@ -242,7 +258,7 @@ def merge_statement(p: list) -> Optional[ImageRepr]:
 def open_statement(p: list) -> Optional[ImageRepr]:
 
     if len(p) == 4:
-        filename, name = p[1], p[-1]
+        filename, name = p[1](), p[-1]
     elif p[1].gettokentype() == "STREAM":
         index, name = p[2](), p[-1]
         filename = parser._stream_env[index]
@@ -254,11 +270,9 @@ def open_statement(p: list) -> Optional[ImageRepr]:
                 filename = BytesIO(resp.read())
         except url_error.HTTPError as exc:
             raise RuntimeError('Could not fetch the image properly; status-code: %s' % exc.getcode())
-    try:
-        image = Image.open(filename)
-    except AttributeError:
-        image = Image.open(filename())
 
+    image = Image.open(filename)
+    
     image = ImageRepr(image)
     parser.env[name] = image
     return image
@@ -276,10 +290,12 @@ def clone_statement(p: list) -> None:
 
  
 @parser.production('expr : CONVERT variable string')
+@parser.production('expr : CONVERT variable string ntuple')
 @evaluate
 def convert_statement(p: list) -> None:
     img = get_var(p[1])
-    img.image = img.image.convert(p[-1]())
+    matrix = p[-1]() if len(p) == 4 else None
+    img.image = img.image.convert(p[2](), matrix=matrix)
     return None
 
  
@@ -337,19 +353,25 @@ def close_statement(p: list) -> None:
 
  
 @parser.production('expr : RESIZE variable ntuple')
+@parser.production('expr : RESIZE variable ntuple string')
+@parser.production('expr : RESIZE variable ntuple number')
 @evaluate
 def resize_statement(p: list) -> tuple:
     img = get_var(p[1])
-    img.image = img.image.resize(p[-1]())
-    return p[-1]
+    resample = getattr(Image, str(p[-1]()), p[-1]()) if len(p) == 4 else 3
+    img.image = img.image.resize(p[2](), resample=resample)
+    return p[2]
 
  
 @parser.production('expr : ROTATE variable number')
+@parser.production('expr : ROTATE variable number string')
+@parser.production('expr : ROTATE variable number number')
 @evaluate
 def rotate_statement(p: list) -> float:
     img = get_var(p[1])
-    img.image = img.image.rotate(p[-1]())
-    return p[-1]
+    resample = getattr(Image, str(p[-1]()), p[-1]()) if len(p) == 4 else 0
+    img.image = img.image.rotate(p[2](), resample=resample)
+    return p[2]
 
  
 @parser.production('expr : PASTE variable ON variable')
@@ -416,7 +438,7 @@ def putalpha_st(p: list) -> None:
 def reduce_st(p: list) -> None:
     img = get_var(p[1])
     box = p[-1]() if len(p) == 4 else None
-    img.image = img.image.reduce(p[2], box=box)
+    img.image = img.image.reduce(p[2](), box=box)
 
  
 @parser.production('expr : SEEK variable number')
@@ -447,11 +469,11 @@ def echo_var(p: list) -> Union[ImageRepr, list]:
 
 # iterators
 
-@parser.production('expr : ITER LEFT_PAREN variable RIGHT_PAREN AS variable LEFT_PAREN statements RIGHT_PAREN')
+@parser.production('expr : ITER LEFT_PAREN variable AS variable RIGHT_PAREN ARROW LEFT_PAREN statements RIGHT_PAREN')
 @evaluate
-def for_loop_st(p: list) -> None:
+def seq_iterator(p: list) -> None:
     img = get_var(p[2])
-    fr = p[5]
+    fr = p[4]
     new_frames = []
 
     for frame in ImageSequence.Iterator(img.image):
@@ -470,6 +492,22 @@ def for_loop_st(p: list) -> None:
     except KeyError:
         pass
 
+    return None
+
+@parser.production('expr : ITER LEFT_PAREN ntuple AS variable RIGHT_PAREN ARROW LEFT_PAREN statements RIGHT_PAREN')
+@parser.production('expr : ITER LEFT_PAREN range AS variable RIGHT_PAREN ARROW LEFT_PAREN statements RIGHT_PAREN')
+@evaluate
+def for_loop_st(p: list) -> None:
+    var, iterable = p[4], p[2]
+
+    for i in iterable:
+        parser.env[var] = i
+        for f in p[-2]:
+            f()
+    try:
+        del parser.env[var]
+    except KeyError:
+        pass
     return None
 
 # error handler

@@ -27,14 +27,15 @@ def cv_process(img: str, operation: Callable, *args, **kwargs) -> np.ndarray:
 @parser.production('expr : CANNY variable number COMMA number')
 @evaluate
 def canny_st(p: list) -> np.ndarray:
-    return cv_process(p[1], cv.Canny, p[2], p[4])
+    return cv_process(p[1], cv.Canny, p[2](), p[4]())
 
  
 @parser.production('expr : CVTCOLOR variable string')
 @evaluate
 def colorspace_convert(p: list) -> np.ndarray:
+    val = p[2]()
     mapping = getattr(cv, 
-        (p[2] if p[2].startswith('COLOR_') else 'COLOR_' + p[2]).upper()
+        (val if val.startswith('COLOR_') else 'COLOR_' + val).upper()
     )
     return cv_process(p[1], cv.cvtColor, mapping)
 
@@ -48,14 +49,15 @@ def bitwise_not(p: list) -> np.ndarray:
 @parser.production('expr : THRESHOLD variable number COMMA number string')
 @evaluate
 def threshold_st(p: list) -> np.ndarray:
-    return cv_process(p[1], cv.threshold, p[2], p[4], getattr(cv, p[5].upper()))
+    return cv_process(p[1], cv.threshold, p[2](), p[4](), getattr(cv, p[5]().upper()))
 
  
 @parser.production('expr : COLORMAP variable string')
 @evaluate
 def apply_color_map(p: list) -> np.ndarray:
+    val = p[2]()
     mapping = getattr(cv, 
-        (p[2] if p[2].startswith('COLORMAP_') else 'COLORMAP_' + p[2]).upper()
+        (val if val.startswith('COLORMAP_') else 'COLORMAP_' + val).upper()
     )
     return cv_process(p[1], cv.applyColorMap, mapping)
 
@@ -64,7 +66,11 @@ def apply_color_map(p: list) -> np.ndarray:
 @evaluate
 def inrange_st(p: list) -> ImageRepr:
     img = get_var(p[0])
-    arr = cv.inRange(img.array, p[2], p[4])
+    arr = cv.inRange(
+        img.array, 
+        np.uint8(p[2]()), 
+        np.uint8(p[4]()),
+    )
     img = ImageRepr(_fromarray(arr))
     parser.env[p[-1]] = img
     return img
