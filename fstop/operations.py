@@ -240,7 +240,7 @@ def draw_ellipse(p: list) -> ImageDraw.Draw:
 @evaluate
 def draw_ellipse_w(p: list) -> ImageDraw.Draw:
     fill = p[-1]() if len(p) == 5 else None
-    return draw(p[1], 'ellipse', xy=p[2](), fill=fill, width=p[3])
+    return draw(p[1], 'ellipse', xy=p[2](), fill=fill, width=p[3]())
 
 
  
@@ -275,7 +275,7 @@ def draw_arc_w(p: list) -> ImageDraw.Draw:
 @evaluate
 def draw_chord(p: list) -> ImageDraw.Draw:
     fill = p[-1]() if len(p) == 7 else None
-    return draw(p[1], 'chord', xy=p[2](), start=p[3()], end=p[5](), fill=fill)
+    return draw(p[1], 'chord', xy=p[2](), start=p[3](), end=p[5](), fill=fill)
 
  
 @parser.production('expr : CHORD variable ntuple number COMMA number number')
