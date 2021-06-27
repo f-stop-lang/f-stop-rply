@@ -25,8 +25,8 @@ parser.env = {}
 parser._stream_env = []
 parser._saved_streams = []
 
-def get_var(name: str, type_: type = ImageRepr) -> Optional[ImageRepr]:
-    if not isinstance(var := parser.env.get(name), type_):
+def get_var(name: str, _: type = ImageRepr) -> Optional[Union[ImageRepr, list, float]]:
+    if not (var := parser.env.get(name)):
         raise NameError("Undefined variable '%s'" % name)
     return var
 
