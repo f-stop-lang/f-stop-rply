@@ -159,6 +159,7 @@ def ntuple(p: list) -> tuple:
         return p[0]() + (p[1](),) if len(p) == 3 else p[0]()
 
 @parser.production('ntuple : TEXTSIZE font COMMA string')
+@evaluate
 def get_textsize(p: list) -> tuple:
     return p[1]().getsize_multiline(p[-1]())
 
