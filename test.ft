@@ -44,4 +44,9 @@ APPEND ham1 TO seq
 SAVE seq 'test.gif' DURATION 170 LOOP 0
 */
 
-ITER ((1, 2) AS i) -> (ECHO i)
+OPEN URL 'https://images-ext-1.discordapp.net/external/kEprEhndW8QTAEfLKNCgpO6HlhABtdFXZug7XOSLVjQ/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/522524473447153695/a_04675c590939b234e57bd85c571252e7.gif' AS img
+OPEN URL 'https://media.discordapp.net/attachments/771857705014263808/858423204744659014/bomb.gif' AS bomb
+NEW [] AS seq
+ITER (img  AS frame) -> (APPEND frame TO seq)
+//ITER (bomb AS frame1) -> (RESIZE frame1 (281, 281) APPEND frame1 TO seq)
+//ECHO seq

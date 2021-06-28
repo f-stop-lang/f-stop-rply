@@ -26,7 +26,7 @@ parser._stream_env = []
 parser._saved_streams = []
 
 def get_var(name: str, _: type = ImageRepr) -> Optional[Union[ImageRepr, list, float]]:
-    if not (var := parser.env.get(name)):
+    if (var := parser.env.get(name)) is None:
         raise NameError("Undefined variable '%s'" % name)
     return var
 
@@ -125,7 +125,7 @@ def numerical_operations(p: list) -> float:
 
 @parser.production('number : variable')
 @evaluate
-def num_var(p: list) -> float:
+def num_var(p: list) -> Any:
     return get_var(p[0], (int, float))
     
 @parser.production('variable : VARIABLE')
