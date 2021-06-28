@@ -7,8 +7,8 @@ generator.ignore(r'//.*') # single line comment
 generator.ignore(r"/\*([\n\r]|.)*\*/") # multi-line comment
 
 generator.add('STRING', r'''("[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*')''')
-generator.add('FLOAT', r'[+-]?(((([1-9][0-9]*)|0))?\.[0-9]+)|((([1-9][0-9]*)|0)\.[0-9]*)')
-generator.add('INTEGER', r'[+-]?([1-9][0-9]*|0)')
+generator.add('FLOAT', r'(((([1-9][0-9]*)|0))?\.[0-9]+)|((([1-9][0-9]*)|0)\.[0-9]*)')
+generator.add('INTEGER', r'([1-9][0-9]*|0)')
 
 generator.add('TO', r'TO')
 generator.add('ON', r'ON')
