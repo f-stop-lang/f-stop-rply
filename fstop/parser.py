@@ -334,7 +334,7 @@ def save_statement(p: list) -> Union[str, BytesIO]:
             img[0].save(p[2](), 
                 save_all=True,
                 append_images=img[1:], 
-                disposal=2,
+                disposal=2, optimize=False, quality=100,
                 **options
             )
         return p[2]()
@@ -347,7 +347,7 @@ def save_statement(p: list) -> Union[str, BytesIO]:
                 p[3](),
                 save_all=True, 
                 append_images=img[1:],
-                disposal=2,
+                disposal=2, optimize=False, quality=100,
                 **options
             )
         buffer.seek(0)
