@@ -1,5 +1,6 @@
 
-from typing import Callable
+from typing import Callable, TypeVar
+from functools import wraps
 
 from PIL import Image as Module
 from PIL import ImageOps, ImageDraw, ImageFont, ImageFilter, ImageEnhance
@@ -14,23 +15,41 @@ def operation(p: list, operation: Callable, *args, **kwargs) -> None:
         image.image,
         *args, **kwargs
     )
-    return None
 
+RT = TypeVar('RT')
+
+def basic_operation(operation: Callable[[Image, ...], Image], *args, **kwargs) -> Callable[[Callable[[list], ...]], RT]:
+    def decorator(func: Callable[[list], RT]) -> Callable[[list], RT]:
+        @wraps(func)
+        def inner(p: list) -> None:
+            func(p)  # Just in case
+            return operation(p, operation, *args, **kwargs)
+        
+        return inner
+    return decorator
+        
+def basic_filter(filter: ImageFilter.Filter, *args, **kwargs) ->  Callable[[Callable[[list], ...]], ...]:
+    return basic_operation(Image.filter, filter)
+    
 @parser.production('expr : INVERT variable')
+@basic_operation(ImageOps.invert)
 def invert_op(p: list) -> None:
-    return operation(p, ImageOps.invert)
+    ...
 
 @parser.production('expr : GRAYSCALE variable')
+@basic_operation(ImageOps.grayscale)
 def grayscale_op(p: list) -> None:
-    return operation(p, ImageOps.grayscale)
+    ...
 
 @parser.production('expr : MIRROR variable')
+@basic_operation(ImageOps.mirror)
 def mirror_op(p: list) -> None:
-    return operation(p, ImageOps.mirror)
+    ...
 
 @parser.production('expr : FLIP variable')
+@basic_operation(ImageOps.flip)
 def flip_op(p: list) -> None:
-    return operation(p, ImageOps.flip)
+    ...
 
 @parser.production('expr : SOLARIZE variable')
 @parser.production('expr : SOLARIZE variable number')
@@ -79,28 +98,34 @@ def fit_op(p: list) -> None:
 # filters
 
 @parser.production('expr : EMBOSS variable')
+@basic_filter(ImageFilter.EMBOSS)
 def emboss(p: list) -> None:
-    return operation(p, Image.filter, ImageFilter.EMBOSS)
+    ...
 
 @parser.production('expr : SMOOTH variable')
+@basic_filter(ImageFilter.SMOOTH_MORE)
 def smooth(p: list) -> None:
-    return operation(p, Image.filter, ImageFilter.SMOOTH_MORE)
+    ...
 
 @parser.production('expr : SHARPEN variable')
+@basic_filter(ImageFilter.SHARPEN)
 def sharpen(p: list) -> None:
-    return operation(p, Image.filter, ImageFilter.SHARPEN)
+    ...
 
 @parser.production('expr : DETAIL variable')
+@basic_filter(ImageFilter.DETAIL)
 def detail(p: list) -> None:
-    return operation(p, Image.filter, ImageFilter.DETAIL)
+    ...
 
 @parser.production('expr : CONTOUR variable')
+@basic_filter(ImageFilter.CONTOUR)
 def contour(p: list) -> None:
-    return operation(p, Image.filter, ImageFilter.CONTOUR)
+    ...
 
 @parser.production('expr : EDGE_ENHANCE variable')
+@basic_filter(ImageFilter.EDGE_ENHANCE_MORE)
 def edge_enhance(p: list) -> None:
-    return operation(p, Image.filter, ImageFilter.EDGE_ENHANCE_MORE)
+    ...
 
 @parser.production('expr : BLUR variable')
 @parser.production('expr : BLUR variable number')
