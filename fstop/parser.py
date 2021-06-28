@@ -104,6 +104,14 @@ def number(p: list) -> float:
             img.image.info.get('loop', 0) if token == "LOOP" else 0
         )
 
+@parser.production('number : ADD number')
+@parser.production('number : SUB number')
+@evaluate
+def pos_neg(p: list) -> float:
+    token = p[0].gettokentype()
+    return -(p[1]()) if token == 'SUB' else p[1]()
+
+
 @parser.production('number : number ADD number')
 @parser.production('number : number SUB number')
 @parser.production('number : number MUL number')
