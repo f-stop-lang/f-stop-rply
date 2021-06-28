@@ -334,7 +334,8 @@ def save_statement(p: list) -> Union[str, BytesIO]:
             img[0].save(p[2](), 
                 save_all=True,
                 append_images=img[1:], 
-                optimize=True, **options,
+                dispose=2,
+                **options
             )
         return p[2]()
     else:
@@ -346,7 +347,8 @@ def save_statement(p: list) -> Union[str, BytesIO]:
                 p[3](),
                 save_all=True, 
                 append_images=img[1:],
-                optimize=True, **options,
+                dispose=2,
+                **options
             )
         buffer.seek(0)
         parser._saved_streams.append(buffer)
