@@ -45,6 +45,11 @@ def statements(p: list) -> list:
 def expr(p: list) -> list:
     return [p[0]]
 
+@parser.production('expr : LEFT_PAREN expr RIGHT_PAREN')
+@evaluate
+def expr_paren(p: list) -> Any:
+    return p[1]()
+
 # object type productions
 
 @parser.production('string : STRING')
@@ -152,6 +157,10 @@ def ntuple(p: list) -> tuple:
         return img.image.size
     else:
         return p[0]() + (p[1](),) if len(p) == 3 else p[0]()
+
+@parser.production('ntuple : TEXTSIZE font COMMA string')
+def get_textsize(p: list) -> tuple:
+    return p[1]().getsize_multiline(p[-1]())
 
 @parser.production('sequence_start : LEFT_BR')
 def seq_start(_: list) -> list:

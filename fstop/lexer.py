@@ -94,6 +94,7 @@ generator.add('MIN_FILTER', r'MIN_FILTER')
 generator.add('MODE_FILTER', r'MODE_FILTER')
 generator.add('MEDIAN_FILTER', r'MEDIAN_FILTER')
 
+generator.add('TEXTSIZE', r'TEXTSIZE')
 generator.add('TEXT', r'TEXT')
 generator.add('FONT', r'FONT')
 generator.add('LINE', r'LINE')
