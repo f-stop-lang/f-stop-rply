@@ -507,9 +507,17 @@ def echo_num(p: list) -> float:
 def seq_iterator(p: list) -> None:
     img = get_var(p[2])
     fr = p[4]
+    
+    old_frames = []
     new_frames = []
 
-    for frame in ImageSequence.Iterator(img.image):
+    if isinstance(img, ImageRepr):
+        iterator = ImageSequence.Iterator(img.image)
+    else:
+        iterator = img
+
+    for frame in iterator:
+        old_frames.append(frame)
         parser.env[fr] = ImageRepr(frame)
 
         for f in p[-2]:
@@ -518,7 +526,8 @@ def seq_iterator(p: list) -> None:
         curr_frame = get_var(fr)
         new_frames.append(curr_frame.image)
 
-    parser.env[p[2]] = new_frames
+    if old_frames != new_frames:
+        parser.env[p[2]] = new_frames
 
     try:
         del parser.env[fr]
