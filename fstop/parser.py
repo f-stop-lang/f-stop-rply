@@ -556,7 +556,7 @@ def for_loop_st(state: ParserState, p: list) -> None:
 # error handler
 
 @parser.error
-def error_handler(token: Token):
+def error_handler(state: ParserState, token: Token):
     options = {
         'token': token.gettokentype(), 
         'pos': token.getsourcepos(),
