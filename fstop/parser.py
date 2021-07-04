@@ -169,7 +169,7 @@ def get_textsize(state: ParserState, p: list) -> tuple:
     return p[1]().getsize_multiline(p[-1]())
 
 @parser.production('sequence_start : LEFT_BR')
-def seq_start(_: list) -> list:
+def seq_start(state: ParserState, p: list) -> list:
     return []
 
 @parser.production('sequence_start : sequence_start variable COMMA')
