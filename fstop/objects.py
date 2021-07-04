@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Callable
 
 import numpy as np
 import cv2 as cv
@@ -40,9 +40,9 @@ class ParserState:
         self._saved_streams = []
 
 
-def evaluate(fn):
-    def wrapper(p):
+def evaluate(fn: Callable):
+    def wrapper(state: ParserState, p: list):
         def inner():
-            return fn(p)
+            return fn(state, p)
         return inner
     return wrapper

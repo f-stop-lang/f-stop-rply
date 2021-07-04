@@ -12,8 +12,10 @@ class Runner:
         self._reset_after_execute = reset_after_execute
         self._lexergen  = fstop.generator
         self._parsergen = fstop.parser
+
         self._lexer  = self._lexergen.build()
         self._parser = self._parsergen.build()
+
         self._state  = fstop.objects.ParserState()
 
     def execute(
@@ -25,7 +27,7 @@ class Runner:
         self._state._stream_env = streams
 
         tokens = self._lexer.lex(code)
-        result = [f() for f in self.parser.parse(tokens)]
+        result = [f() for f in self._parser.parse(tokens, state=self._state)]
 
         self.streams = self._state._saved_streams
 
