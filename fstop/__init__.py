@@ -7,4 +7,4 @@ from . import cv
 
 __title__ = 'fstop'
 __author__ = 'Tom-the-Bomb'
-__version__ = '0.2.0'
+__version__ = '0.2.1'

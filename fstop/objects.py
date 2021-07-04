@@ -1,6 +1,14 @@
+from typing import Dict, Any
+
 import numpy as np
 import cv2 as cv
 from rply.token import BaseBox
+
+__all__: tuple = (
+    'ImageRepr', 
+    'ParserState', 
+    'evaluate',
+)
 
 class ImageRepr(BaseBox):
 
@@ -23,6 +31,14 @@ class ImageRepr(BaseBox):
             return arr
         else:
             return super().__getattribute__(attr)
+
+class ParserState:
+
+    def __init__(self, env: Dict[str, Any] = None) -> None:
+        self.env = env or {}
+        self._stream_env = []
+        self._saved_streams = []
+
 
 def evaluate(fn):
     def wrapper(p):

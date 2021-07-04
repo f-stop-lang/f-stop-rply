@@ -8,12 +8,13 @@ importlib.reload(fstop)
 
 class Runner:
 
-    def __init__(self) -> None:
+    def __init__(self, reset_after_execute: Optional[bool] = False) -> None:
+        self._reset_after_execute = reset_after_execute
         self._lexergen  = fstop.generator
         self._parsergen = fstop.parser
-        self.lexer  = self._lexergen.build()
-        self.parser = self._parsergen.build()
-        self.reset()
+        self._lexer  = self._lexergen.build()
+        self._parser = self._parsergen.build()
+        self._state  = fstop.objects.ParserState()
 
     def execute(
         self, 
@@ -21,18 +22,18 @@ class Runner:
         streams: Optional[List[BytesIO]] = []
     ) -> List[Any]:
 
-        self._parsergen._stream_env = streams
-        tokens = self.lexer.lex(code)
-        result = [f() for f in self.parser.parse(tokens)]
-        self.streams = self._parsergen._saved_streams
-        return result
+        self._state._stream_env = streams
 
-    def reset(self) -> Dict:
-        self._parsergen.env = {}
-        self._parsergen._stream_env = []
-        self._parsergen._saved_streams = []
-        self.streams = []
-        return {}
+        tokens = self._lexer.lex(code)
+        result = [f() for f in self.parser.parse(tokens)]
+
+        self.streams = self._state._saved_streams
+
+        if self._reset_after_execute:
+            self._state = fstop.objects.ParserState()
+
+        return result
+    
 
 if __name__ == '__main__':
     with open("test.ft") as ft:
