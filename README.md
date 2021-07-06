@@ -25,9 +25,22 @@ runner.execute(
 OPEN 'filename.png' AS img // Opens a local image
 CONVERT img "RGBA"         // convert to RGBA mode
 RESIZE  img (256, 256)     // resize image to size 256 x 256
-BLUR img 10 v              // blur the image by 10 deg
+BLUR img 10                // blur the image by 10 deg
 SAVE img 'OUTPUT.PNG'      // save the image as output.png
 ```
+
+(basic operators)
+- `+` addition : works on `number`, `tuples` and `sequences`
+- `-` `*` subtraction, multiplication : works on `number` only
+- `/` `|` division, floor-div : works on `number` only
+- `^` exponents : works on `number` only
+
+(properties)
+Examples:
+- `WIDTH img` -> int (width of the image)
+- `HEIGHT img` -> int (height of the image)
+- `MODE img` -> str (image mode)
+and more ...
 
 (streams)
 - streams can be passed in via the `streams` kwarg in `execute`
@@ -53,7 +66,7 @@ OPEN 'frame2.png' AS frame2
 APPEND frame2 TO sequence // append to sequence
 
 SAVE sequence 'test.gif' 
-// specify duration and loop vvv
+// specify duration and loop
 SAVE sequence 'test.gif' DURATION 10 LOOP 0
 
 // initialize sequence with existing frames
