@@ -8,7 +8,7 @@
 
 1. **MrKomodoDragon** - Main dev of fstop-lark
 2. **Tom-the-Bomb** - Main dev of fstop-rply
-3. **Cryptex-github** - helps with the docs
+3. **Cryptex-github** - Helps with the docs
 4. **Jay3332** - Helps with ideas, regex and other stuff (in the future he might make it in C??)
 
 ### Docs
