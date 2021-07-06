@@ -1,10 +1,13 @@
 from .lexer import generator
 from .parser import parser
 from .objects import ImageRepr
+from .core import Runner
 
 from . import operations
 from . import cv
 
 __title__ = 'fstop'
 __author__ = 'Tom-the-Bomb'
-__version__ = '0.2.1'
+__version__ = '0.2.2'
+__license__ = 'MIT'
+__copyright__ = 'Copyright 2021 Tom the Bomb'
