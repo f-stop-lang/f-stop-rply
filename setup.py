@@ -4,7 +4,7 @@ from setuptools import setup
 
 with open("fstop/__init__.py") as init:
     content = init.read()
-    
+
     version = re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', 
         content, re.MULTILINE,
@@ -35,7 +35,7 @@ setup(
     name = name, 
     author = author,
     version = version, 
-    description = "An unoffical API wrapper for tio.run",
+    description = "A basic scripting-lang for image-manipulation in python",
     long_description = readme,
     long_description_content_type = "text/markdown",
     license = license,
