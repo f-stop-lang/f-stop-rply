@@ -1,4 +1,5 @@
 **/__pycache__/
 .vscode
 /fstop.egg-info/
+/f_stop.egg-info/
 /dist
