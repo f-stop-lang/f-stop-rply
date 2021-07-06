@@ -1,5 +1,5 @@
 
-OPEN "./assets/test.png" AS img
+OPEN "tests/test.png" AS img
 NEW [img,] AS var
 NEW "RGB" (WIDTH img, HEIGHT img + 10 - 10) COLOR (0, 0, 255) AS bg
 CONVERT img MODE bg
