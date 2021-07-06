@@ -6,7 +6,7 @@ from .core import Runner
 from . import operations
 from . import cv
 
-__title__ = 'fstop'
+__title__ = 'f-stop'
 __author__ = 'Tom-the-Bomb'
 __version__ = '0.2.2'
 __license__ = 'MIT'
