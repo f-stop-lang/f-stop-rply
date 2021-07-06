@@ -3,25 +3,26 @@ import re
 from setuptools import setup
 
 with open("fstop/__init__.py") as init:
-
+    content = init.read()
+    
     version = re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', 
-        init.read(), re.MULTILINE,
+        content, re.MULTILINE,
     ).group(1)
 
     author = re.search(
         r'^__author__\s*=\s*[\'"]([^\'"]*)[\'"]', 
-        init.read(), re.MULTILINE,
+        content, re.MULTILINE,
     ).group(1)
 
     name = re.search(
         r'^__title__\s*=\s*[\'"]([^\'"]*)[\'"]', 
-        init.read(), re.MULTILINE,
+        content, re.MULTILINE,
     ).group(1)
 
     license = re.search(
         r'^__license__\s*=\s*[\'"]([^\'"]*)[\'"]', 
-        init.read(), re.MULTILINE,
+        content, re.MULTILINE,
     ).group(1)
 
 with open('requirements.txt') as requirements:
