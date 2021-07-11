@@ -191,10 +191,16 @@ def draw(state: ParserState, img: str, operation: str, *args, **kwargs) -> Image
 @parser.production('font : FONT LEFT_PAREN string COMMA number RIGHT_PAREN')
 @evaluate
 def get_font(state: ParserState, p: list) -> ImageFont.FreeTypeFont:
-    if len(p) == 2:
-        return ImageFont.truetype(p[1]())
+    path = p[1]() if len(p) == 2 else p[2]()
+    size = p[4]() if len(p) == 6 else 10
+    args = (path, size)
+
+    if font := state._font_cache.get(args):
+        return font 
     else:
-        return ImageFont.truetype(p[2](), p[4]())
+        font = ImageFont.truetype(path, size)
+        state._font_cache[args] = font
+        return font
 
  
 @parser.production('expr : TEXT variable string ntuple')

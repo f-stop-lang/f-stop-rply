@@ -1,8 +1,14 @@
-from typing import Dict, Any, Callable
+from typing import Dict, Any, Callable, List, Tuple
+from io import BytesIO
 
 import numpy as np
 import cv2 as cv
+
+from PIL.ImageFont import FreeTypeFont
 from rply.token import BaseBox
+
+Streams = List[BytesIO]
+Fonts = Dict[Tuple[str, int], FreeTypeFont]
 
 __all__: tuple = (
     'ImageRepr', 
@@ -36,8 +42,9 @@ class ParserState:
 
     def __init__(self, env: Dict[str, Any] = None) -> None:
         self.env = env or {}
-        self._stream_env = []
-        self._saved_streams = []
+        self._stream_env: Streams = []
+        self._saved_streams: Streams = []
+        self._font_cache: Fonts = {}
 
 
 def evaluate(fn: Callable):
