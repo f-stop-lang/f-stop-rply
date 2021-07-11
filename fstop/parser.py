@@ -370,14 +370,16 @@ def convert_statement(state: ParserState, p: list) -> None:
 @evaluate
 def save_statement(state: ParserState, p: list) -> Union[str, BytesIO]:
     img = get_var(state, p[1], (ImageRepr, list))
-    if isinstance(img, list):
-        options = {}
-        try:
-            i = p.index(Token('DURATION', r'DURATION')) + 1
-            j = p.index(Token('LOOP', r'LOOP')) + 1
-            options['duration'], options['loop'] = p[i](), p[j]()
-        except (ValueError, TypeError, IndexError):
-            pass
+    
+    options = {}
+    if (dur_tok := Token('DURATION', r'DURATION')) in p:
+        i = p.index(dur_tok) + 1
+        options['duration'] = p[i]()
+        
+    if (loop_tok := Token('LOOP', r'LOOP')) in p:
+        j = p.index(loop_tok) + 1
+        options['loop'] = p[j]()
+        
     if Token('STREAM', r'STREAM') not in p:
         if isinstance(img, ImageRepr):
             img.image.save(p[2]())

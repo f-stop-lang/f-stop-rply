@@ -16,7 +16,7 @@ from .core import Runner
 
 __title__ = 'f-stop'
 __author__ = 'Tom-the-Bomb'
-__version__ = '0.2.7'
+__version__ = '0.2.8'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2021 Tom the Bomb'
 
