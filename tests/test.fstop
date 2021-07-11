@@ -1,4 +1,4 @@
-
+/*
 OPEN "tests/test.png" AS img
 NEW [img,] AS var
 NEW "RGB" (WIDTH img, HEIGHT img + 10 - 10) COLOR (0, 0, 255) AS bg
@@ -10,7 +10,7 @@ ROTATE img -40.0
 PASTE img ON bg (100, 100)
 PUTPIXEL img (10, 10 - 2) COLOR 120
 BLEND bg, overlay ALPHA 1 - 0.5 AS blended
-TEXT blended "ur mom sus __ !!!!" (10, 10) COLOR (255, 0, 0)
+TEXT blended "ur mom sus __ !!!!" (10, 10) FONT ('arial.ttf', 100) COLOR (255, 0, 0)
 LINE blended (0, 0, 100, 100) COLOR (255, 0, 0)
 DOT blended (100, 20)
 RECTANGLE blended (50, 50, 200, 200) 10 COLOR (255, 0, 0)
@@ -20,3 +20,8 @@ ECHO "amogus sus"
 CLOSE img
 CLOSE bg
 CLOSE blended
+*/
+
+NEW 'RGB' (500, 500) COLOR 'white' AS img
+TEXT img 'sussjfhweogwrhg' (10, 10) FONT ('arial.ttf', 30) COLOR 'red'
+SHOW img

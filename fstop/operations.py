@@ -209,9 +209,9 @@ def get_font(state: ParserState, p: list) -> ImageFont.FreeTypeFont:
 @parser.production('expr : TEXT variable string ntuple font color')
 @evaluate
 def write_text(state: ParserState, p: list) -> ImageDraw.Draw:
-    coords, text = p[3](), p[2]()
+    coords, text, fm = p[3](), p[2](), p[4]()
     fill = p[-1]() if len(p) > 4 and not isinstance(p, ImageFont.FreeTypeFont) else None
-    font = p[4] if len(p) > 4 and isinstance(p[4], ImageFont.FreeTypeFont) else None
+    font = fm if len(p) > 4 and isinstance(fm, ImageFont.FreeTypeFont) else None
     return draw(state, p[1], 'multiline_text', xy=coords, text=text, fill=fill, font=font)
 
 
