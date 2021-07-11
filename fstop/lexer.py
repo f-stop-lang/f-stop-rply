@@ -54,6 +54,7 @@ generator.add('CONVERT', r'CONVERT')
 generator.add('PUTPIXEL', r'PUTPIXEL')
 generator.add('SEQUENCE', r'SEQUENCE')
 
+generator.add('SPLIT', r'SPLIT')
 generator.add('NEW', r'NEW')
 generator.add('WIDTH', r'WIDTH')
 generator.add('HEIGHT', r'HEIGHT')

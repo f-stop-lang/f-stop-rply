@@ -163,21 +163,21 @@ def ntuple(state: ParserState, p: list) -> tuple:
     else:
         return p[0]() + (p[1](),) if len(p) == 3 else p[0]()
 
-@parser.production('ntuple_start : LEFT_PAREN variable COMMA')
+@parser.production('vartuple_start : LEFT_PAREN variable COMMA')
 @evaluate
 def vartuple_start(state: ParserState, p: list) -> tuple:
     return (p[1],)
 
-@parser.production('ntuple_start : ntuple_start variable COMMA')
+@parser.production('vartuple_start : vartuple_start variable COMMA')
 @evaluate
 def vartuple_body(state: ParserState, p: list) -> tuple:
-    return p[0] + (p[1],)
+    return p[0]() + (p[1],)
 
-@parser.production('ntuple : ntuple_start RIGHT_PAREN')
-@parser.production('ntuple : ntuple_start variable RIGHT_PAREN')
+@parser.production('vartuple : vartuple_start RIGHT_PAREN')
+@parser.production('vartuple : vartuple_start variable RIGHT_PAREN')
 @evaluate
 def vartuple(state: ParserState, p: list) -> tuple:
-    tup = p[0] + (p[1],) if len(p) == 3 else p[0]
+    tup = p[0]() + (p[1],) if len(p) == 3 else p[0]()
     return tup
 
 @parser.production('ntuple : TEXTSIZE font COMMA string')
@@ -282,10 +282,11 @@ def new_statement(state: ParserState, p: list) -> Optional[ImageRepr]:
         return image
 
 @parser.production('expr : SPLIT variable AS vartuple')
+@evaluate
 def split_statement(state: ParserState, p: list) -> None:
-    var, bands = p[1], p[3]
-    img = get_var(var)
-    chan = img.split()
+    var, bands = p[1], p[3]()
+    img = get_var(state, var)
+    chan = img.image.split()
 
     if (a := len(bands)) != (b := len(chan)):
         raise ValueError('Got %s bands from the image, received %s variables to store as' % b, a)
@@ -293,7 +294,7 @@ def split_statement(state: ParserState, p: list) -> None:
         for var, band in zip(bands, chan):
             img = ImageRepr(band)
             state.env[var] = img
-            
+
  
 @parser.production('expr : MERGE string vartuple AS variable')
 @evaluate
