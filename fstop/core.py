@@ -1,19 +1,16 @@
 from typing import List, Optional, Any
 from io import BytesIO
 
-from .lexer import generator
-from .parser import parser
 from .objects import ParserState
+
+from . import lexer, parser
 
 class Runner:
 
     def __init__(self, reset_after_execute: bool = False) -> None:
         self._reset_after_execute = reset_after_execute
-        self._lexergen  = generator
-        self._parsergen = parser
-
-        self._lexer  = self._lexergen.build()
-        self._parser = self._parsergen.build()
+        self._lexer  = lexer
+        self._parser = parser
 
         self._state  = ParserState()
 
