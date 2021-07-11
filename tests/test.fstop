@@ -1,4 +1,4 @@
-/*
+
 OPEN "tests/test.png" AS img
 NEW [img,] AS var
 NEW "RGB" (WIDTH img, HEIGHT img + 10 - 10) COLOR (0, 0, 255) AS bg
@@ -20,8 +20,3 @@ ECHO "amogus sus"
 CLOSE img
 CLOSE bg
 CLOSE blended
-*/
-
-NEW 'RGB' (500, 500) COLOR 'white' AS img
-TEXT img 'sussjfhweogwrhg' (10, 10) FONT ('arial.ttf', 30) COLOR 'red'
-SHOW img
