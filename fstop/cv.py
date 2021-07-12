@@ -26,11 +26,10 @@ def cv_process(state: ParserState, img: str, operation: Callable, *args, **kwarg
 def _corner_dtc(state: ParserState, var: str, fill: Union[int, tuple] = (255, 255, 255), size: int = 5) -> np.ndarray:
     img = get_var(state, var)
     arr: np.ndarray = img.array
+    gray = arr.copy()
 
     if len(arr.shape) > 2:
-        gray = cv.cvtColor(arr, cv.COLOR_BGR2GRAY)
-    else:
-        gray = arr.copy()
+        gray = cv.cvtColor(gray, cv.COLOR_BGR2GRAY)
 
     corners = cv.goodFeaturesToTrack(gray, 100, 0.01, 10)
     corners = np.int0(corners)
@@ -124,11 +123,10 @@ def detect(state: ParserState, p: list) -> np.ndarray:
     img = get_var(state, img)
 
     arr: np.ndarray = img.array
+    gray = arr.copy()
 
     if len(arr.shape) > 2:
-        gray = cv.cvtColor(arr, cv.COLOR_BGR2GRAY)
-    else:
-        gray = arr.copy()
+        gray = cv.cvtColor(gray, cv.COLOR_BGR2GRAY)
 
     rect = cascade.detectMultiScale(gray, scaleFactor=scale, minNeighbors=minN)
 
