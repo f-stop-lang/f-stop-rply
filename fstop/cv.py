@@ -27,7 +27,7 @@ def _corner_dtc(state: ParserState, var: str, fill: Union[int, tuple] = (255, 25
     img = get_var(state, var)
     arr: np.ndarray = img.array
 
-    if arr.shape[2] != 1:
+    if len(arr.shape) > 2:
         gray = cv.cvtColor(arr, cv.COLOR_BGR2GRAY)
     else:
         gray = arr.copy()
@@ -125,12 +125,12 @@ def detect(state: ParserState, p: list) -> np.ndarray:
 
     arr: np.ndarray = img.array
 
-    if arr.shape[2] != 1:
+    if len(arr.shape) > 2:
         gray = cv.cvtColor(arr, cv.COLOR_BGR2GRAY)
     else:
         gray = arr.copy()
 
-    rect = cascade.detectMultiScale(gray, scale, minN)
+    rect = cascade.detectMultiScale(gray, scaleFactor=scale, minNeighbors=minN)
 
     for (x, y, w, h) in rect:
         cv.rectangle(arr, (x, y), (x + w, y + h), color, width)
