@@ -27,7 +27,7 @@ def _corner_dtc(state: ParserState, var: str, fill: Union[int, tuple] = (255, 25
     img = get_var(state, var)
     arr: np.ndarray = img.array
 
-    if len(arr.shape[2]) != 1:
+    if arr.shape[2] != 1:
         gray = cv.cvtColor(arr, cv.COLOR_BGR2GRAY)
     else:
         gray = arr.copy()
@@ -125,7 +125,7 @@ def detect(state: ParserState, p: list) -> np.ndarray:
 
     arr: np.ndarray = img.array
 
-    if len(arr.shape[2]) != 1:
+    if arr.shape[2] != 1:
         gray = cv.cvtColor(arr, cv.COLOR_BGR2GRAY)
     else:
         gray = arr.copy()
