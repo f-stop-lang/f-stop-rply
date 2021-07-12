@@ -222,6 +222,11 @@ def str_concat(state: ParserState, p: list) -> str:
 def tuple_concat(state: ParserState, p: list) -> tuple:
     return p[0]() + p[-1]()
 
+@parser.production('vartuple : vartuple ADD vartuple')
+@evaluate
+def vartuple_concat(state: ParserState, p: list) -> tuple:
+    return p[0]() + p[-1]()
+    
 @parser.production('sequence : sequence ADD sequence')
 @evaluate
 def seq_concat(state: ParserState, p: list) -> list:
@@ -289,7 +294,7 @@ def split_statement(state: ParserState, p: list) -> None:
     chan = img.image.split()
 
     if (a := len(bands)) != (b := len(chan)):
-        raise ValueError('Got %s bands from the image, received %s variables to store as' % b, a)
+        raise ValueError('Got %s bands from the image, received %s variables to store as' % (b, a))
     else:
         for var, band in zip(bands, chan):
             img = ImageRepr(band)

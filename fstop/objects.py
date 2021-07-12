@@ -9,6 +9,7 @@ from rply.token import BaseBox
 
 Streams = List[BytesIO]
 Fonts = Dict[Tuple[str, int], FreeTypeFont]
+Cascades = Dict[str, cv.CascadeClassifier]
 
 __all__: tuple = (
     'ImageRepr', 
@@ -45,6 +46,7 @@ class ParserState:
         self._stream_env: Streams = []
         self._saved_streams: Streams = []
         self._font_cache: Fonts = {}
+        self._cascade_cache: Cascades = {}
 
 
 def evaluate(fn: Callable):
