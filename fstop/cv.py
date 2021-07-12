@@ -103,7 +103,7 @@ def bilateral_filter(state: ParserState, p: list) -> np.ndarray:
 @parser.production('cascade :  CASCADE string')
 @evaluate
 def get_cascade(state: ParserState, p: list) -> cv.CascadeClassifier:
-    path = p[1]
+    path = p[1]()
     if (cascade := state._cascade_cache.get(path)):
         return cascade
     else:
@@ -152,7 +152,7 @@ def corner_detect(state: ParserState, p: list) -> np.ndarray:
 def corner_detect_c(state: ParserState, p: list) -> np.ndarray:
     size = p[2] if len(p) == 4 else 3
     return _corner_dtc(state, p[1], fill=p[-1](), size=size)
-    
+
 
 @parser.production('expr : variable AND variable AS variable')
 @evaluate
