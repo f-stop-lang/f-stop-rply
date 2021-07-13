@@ -141,14 +141,14 @@ def detect(state: ParserState, p: list) -> np.ndarray:
 @parser.production('expr : CORNERS variable number')
 @evaluate
 def corner_detect(state: ParserState, p: list) -> np.ndarray:
-    size = p[2] if len(p) == 3 else 3
+    size = p[2]() if len(p) == 3 else 3
     return _corner_dtc(state, p[1], size=size)
 
 @parser.production('expr : CORNERS variable color')
 @parser.production('expr : CORNERS variable number color')
 @evaluate
 def corner_detect_c(state: ParserState, p: list) -> np.ndarray:
-    size = p[2] if len(p) == 4 else 3
+    size = p[2]() if len(p) == 4 else 3
     return _corner_dtc(state, p[1], fill=p[-1](), size=size)
 
 
