@@ -596,6 +596,41 @@ def for_loop_st(state: ParserState, p: list) -> None:
         pass
     return None
 
+# function impl
+
+@parser.production('args : LEFT_PAREN RIGHT_PAREN')
+@parser.production('args : LEFT_PAREN variable RIGHT_PAREN')
+@parser.production('args : vartuple')
+@evaluate
+def fn_args(state: ParserState, p: list) -> tuple:
+    if len(p) == 2:
+        return ()
+    elif len(p) == 3:
+        return (p[1],)
+    else:
+        return [0]()
+
+@parser.production('expr : FN variable args ARROW LEFT_PAREN statements RIGHT_PAREN')
+@evaluate
+def function_def(state: ParserState, p: list) -> Function:
+    name, args, statements = p[1], p[2](), p[5]
+        
+    fn = Function(state,
+        name=name, 
+        statements=statements,
+        args=args
+    )
+
+    return fn
+
+@parser.production('expr : CALL variable args')
+@evaluate
+def call_function(state: ParserState, p: list) -> None:
+    name, args = p[1], p[2]()
+    args = [get_var(state, n) for n in args]
+    fn = get_var(state, name)
+    return fn(*args)
+
 # error handler
 
 @parser.error

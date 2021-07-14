@@ -1,4 +1,4 @@
-
+/*
 OPEN "tests/test.png" AS img
 NEW [img,] AS var
 NEW "RGB" (WIDTH img, HEIGHT img + 10 - 10) COLOR (0, 0, 255) AS bg
@@ -20,3 +20,18 @@ ECHO "amogus sus"
 CLOSE img
 CLOSE bg
 CLOSE blended
+
+*/
+
+FN main(frame) -> (
+    CONVERT frame 'RGB'
+    INVERT frame
+)
+
+OPEN URL 'https://cdn.discordapp.com/avatars/522524473447153695/a_04675c590939b234e57bd85c571252e7.gif?size=1024' AS img
+
+ITER (img AS frame) -> (
+    CALL main(frame)
+)
+
+SAVE img 'test.gif'
