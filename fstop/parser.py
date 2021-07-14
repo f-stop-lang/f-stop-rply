@@ -608,7 +608,38 @@ def fn_args(state: ParserState, p: list) -> tuple:
     elif len(p) == 3:
         return (p[1],)
     else:
-        return [0]()
+        return p[0]()
+
+@parser.production('arg : number')
+@parser.production('arg : string')
+@parser.production('arg : ntuple')
+@parser.production('arg : sequence')
+@parser.production('arg : color')
+@parser.production('arg : range')
+@evaluate
+def arg_1(state: ParserState, p: list) -> Any:
+    return p[0]()
+
+@parser.production('arg : variable')
+@evaluate
+def arg_2(state: ParserState, p: list) -> Any:
+    return get_var(p[0])
+
+@parser.production('input_args_start : LEFT_PAREN')
+@evaluate
+def in_args_start(state: ParserState, p: list) -> tuple:
+    return ()
+
+@parser.production('input_args_start : input_args_start arg COMMA')
+@evaluate
+def in_args_body(state: ParserState, p: list) -> tuple:
+    return p[0]() + (p[1](),)
+
+@parser.production('input_args : input_args_start RIGHT_PAREN')
+@parser.production('input_args : input_args_start arg RIGHT_PAREN')
+@evaluate
+def input_args(state: ParserState, p: list) -> tuple:
+    return p[0]() + (p[1](),) if len(p) == 3 else p[0]()
 
 @parser.production('expr : FN variable args ARROW LEFT_PAREN statements RIGHT_PAREN')
 @evaluate
@@ -623,11 +654,10 @@ def function_def(state: ParserState, p: list) -> Function:
 
     return fn
 
-@parser.production('expr : CALL variable args')
+@parser.production('expr : CALL variable input_args')
 @evaluate
 def call_function(state: ParserState, p: list) -> None:
     name, args = p[1], p[2]()
-    args = [get_var(state, n) for n in args]
     fn = get_var(state, name)
     return fn(*args)
 

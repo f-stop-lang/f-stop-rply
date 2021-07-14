@@ -23,15 +23,9 @@ CLOSE blended
 
 */
 
-FN main(frame) -> (
-    CONVERT frame 'RGB'
-    INVERT frame
+FN main(roothink, roosex) -> (
+    ECHO roothink
+    ECHO roosex
 )
 
-OPEN URL 'https://cdn.discordapp.com/avatars/522524473447153695/a_04675c590939b234e57bd85c571252e7.gif?size=1024' AS img
-
-ITER (img AS frame) -> (
-    CALL main(frame)
-)
-
-SAVE img 'test.gif'
+CALL main('sus', (1, 2))
