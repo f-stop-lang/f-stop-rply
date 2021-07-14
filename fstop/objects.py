@@ -1,6 +1,21 @@
+from typing import Dict, Any, Callable, List, Tuple
+from io import BytesIO
+
 import numpy as np
 import cv2 as cv
+
+from PIL.ImageFont import FreeTypeFont
 from rply.token import BaseBox
+
+Streams = List[BytesIO]
+Fonts = Dict[Tuple[str, int], FreeTypeFont]
+Cascades = Dict[str, cv.CascadeClassifier]
+
+__all__: tuple = (
+    'ImageRepr', 
+    'ParserState', 
+    'evaluate',
+)
 
 class ImageRepr(BaseBox):
 
@@ -24,9 +39,19 @@ class ImageRepr(BaseBox):
         else:
             return super().__getattribute__(attr)
 
-def evaluate(fn):
-    def wrapper(p):
+class ParserState:
+
+    def __init__(self, env: Dict[str, Any] = None) -> None:
+        self.env = env or {}
+        self._stream_env: Streams = []
+        self._saved_streams: Streams = []
+        self._font_cache: Fonts = {}
+        self._cascade_cache: Cascades = {}
+
+
+def evaluate(fn: Callable):
+    def wrapper(state: ParserState, p: list):
         def inner():
-            return fn(p)
+            return fn(state, p)
         return inner
     return wrapper

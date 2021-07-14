@@ -7,8 +7,8 @@ generator.ignore(r'//.*') # single line comment
 generator.ignore(r"/\*([\n\r]|.)*\*/") # multi-line comment
 
 generator.add('STRING', r'''("[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*')''')
-generator.add('FLOAT', r'[+-]?(((([1-9][0-9]*)|0))?\.[0-9]+)|((([1-9][0-9]*)|0)\.[0-9]*)')
-generator.add('INTEGER', r'[+-]?([1-9][0-9]*|0)')
+generator.add('FLOAT', r'(((([1-9][0-9]*)|0))?\.[0-9]+)|((([1-9][0-9]*)|0)\.[0-9]*)')
+generator.add('INTEGER', r'([1-9][0-9]*|0)')
 
 generator.add('TO', r'TO')
 generator.add('ON', r'ON')
@@ -26,12 +26,18 @@ generator.add('APPEND', r'APPEND')
 generator.add('STREAM', r'STREAM')
 generator.add('LOOP', r'LOOP')
 generator.add('DURATION', r'DURATION')
+generator.add('FORMAT', r'FORMAT')
+generator.add('RANGE', r'RANGE')
 
 generator.add('CANNY', r'CANNY')
 generator.add('CVTCOLOR', r'CVTCOLOR')
 generator.add('INRANGE', r'INRANGE')
 generator.add('THRESHOLD', r'THRESHOLD')
 generator.add('COLORMAP', r'COLORMAP')
+generator.add('CASCADE', r'CASCADE')
+generator.add('BILFILTER', r'BILFILTER')
+generator.add('DETECT', r'DETECT')
+generator.add('CORNERS', r'CORNERS')
 
 generator.add('ITER', r'ITER')
 generator.add('OPEN', r'OPEN')
@@ -52,6 +58,7 @@ generator.add('CONVERT', r'CONVERT')
 generator.add('PUTPIXEL', r'PUTPIXEL')
 generator.add('SEQUENCE', r'SEQUENCE')
 
+generator.add('SPLIT', r'SPLIT')
 generator.add('NEW', r'NEW')
 generator.add('WIDTH', r'WIDTH')
 generator.add('HEIGHT', r'HEIGHT')
@@ -92,6 +99,7 @@ generator.add('MIN_FILTER', r'MIN_FILTER')
 generator.add('MODE_FILTER', r'MODE_FILTER')
 generator.add('MEDIAN_FILTER', r'MEDIAN_FILTER')
 
+generator.add('TEXTSIZE', r'TEXTSIZE')
 generator.add('TEXT', r'TEXT')
 generator.add('FONT', r'FONT')
 generator.add('LINE', r'LINE')
@@ -109,6 +117,7 @@ generator.add('COLORIZE', r'COLORIZE')
 
 generator.add('VARIABLE', r'[a-zA-Z_][a-zA-Z0-9_]*')
 
+generator.add('ARROW', r'->')
 generator.add('COMMA', r',')
 generator.add('LEFT_PAREN', r'\(')
 generator.add('RIGHT_PAREN', r'\)')
