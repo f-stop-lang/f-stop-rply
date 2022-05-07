@@ -452,7 +452,7 @@ def paste_statement(state: ParserState, p: list) -> None:
     img1, img2 = get_var(state, image), get_var(state, snippet)
     xy = (0, 0) if len(p) == 4 else p[-1]()
     mask = get_var(state, p[-2]) if len(p) == 7 else None
-    img2.image.paste(img1.image, xy, mask=mask)
+    img2.image.paste(img1.image, xy, mask=mask.image)
     return None
 
  
@@ -595,6 +595,71 @@ def for_loop_st(state: ParserState, p: list) -> None:
     except KeyError:
         pass
     return None
+
+# function impl
+
+@parser.production('args : LEFT_PAREN RIGHT_PAREN')
+@parser.production('args : LEFT_PAREN variable RIGHT_PAREN')
+@parser.production('args : vartuple')
+@evaluate
+def fn_args(state: ParserState, p: list) -> tuple:
+    if len(p) == 2:
+        return ()
+    elif len(p) == 3:
+        return (p[1],)
+    else:
+        return p[0]()
+
+@parser.production('arg : number')
+@parser.production('arg : string')
+@parser.production('arg : ntuple')
+@parser.production('arg : sequence')
+@parser.production('arg : color')
+@parser.production('arg : range')
+@evaluate
+def arg_1(state: ParserState, p: list) -> Any:
+    return p[0]()
+
+@parser.production('arg : variable')
+@evaluate
+def arg_2(state: ParserState, p: list) -> Any:
+    return get_var(p[0])
+
+@parser.production('input_args_start : LEFT_PAREN')
+@evaluate
+def in_args_start(state: ParserState, p: list) -> tuple:
+    return ()
+
+@parser.production('input_args_start : input_args_start arg COMMA')
+@evaluate
+def in_args_body(state: ParserState, p: list) -> tuple:
+    return p[0]() + (p[1](),)
+
+@parser.production('input_args : input_args_start RIGHT_PAREN')
+@parser.production('input_args : input_args_start arg RIGHT_PAREN')
+@evaluate
+def input_args(state: ParserState, p: list) -> tuple:
+    return p[0]() + (p[1](),) if len(p) == 3 else p[0]()
+
+@parser.production('expr : FN variable args ARROW LEFT_PAREN statements RIGHT_PAREN')
+@evaluate
+def function_def(state: ParserState, p: list) -> Function:
+    name, args, statements = p[1], p[2](), p[5]
+        
+    fn = Function(state,
+        name=name, 
+        statements=statements,
+        args=args
+    )
+
+    return fn
+
+@parser.production('expr : CALL variable input_args')
+@evaluate
+def call_function(state: ParserState, p: list) -> None:
+    name, args = p[1], p[2]()
+    fn = get_var(state, name)
+    return fn(*args)
 
 # error handler
 

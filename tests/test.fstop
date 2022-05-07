@@ -1,4 +1,4 @@
-
+/*
 OPEN "tests/test.png" AS img
 NEW [img,] AS var
 NEW "RGB" (WIDTH img, HEIGHT img + 10 - 10) COLOR (0, 0, 255) AS bg
@@ -20,3 +20,12 @@ ECHO "amogus sus"
 CLOSE img
 CLOSE bg
 CLOSE blended
+
+*/
+
+FN main(roothink, roosex) -> (
+    ECHO roothink
+    ECHO roosex
+)
+
+CALL main('sus', (1, 2))
