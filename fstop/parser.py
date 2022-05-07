@@ -452,7 +452,7 @@ def paste_statement(state: ParserState, p: list) -> None:
     img1, img2 = get_var(state, image), get_var(state, snippet)
     xy = (0, 0) if len(p) == 4 else p[-1]()
     mask = get_var(state, p[-2]) if len(p) == 7 else None
-    img2.image.paste(img1.image, xy, mask=mask)
+    img2.image.paste(img1.image, xy, mask=mask.image)
     return None
 
  
